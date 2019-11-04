@@ -43,34 +43,34 @@ public class BasicMessageBot {
 
 	public static void main(String[] args) {
 		// db setup
-		JsonSqlConfigParser sqlparser = new JsonSqlConfigParser();
-		sqlparser.parseConfig(args);
-		if(!sqlparser.configIsCorrect()) {
-			LOGGER.fatal("Config file was not set up correctly.");
-			return;
-		}
-		String modelDirectory = sqlparser.getModelDirectory();
-		SQLModelBuilder builder = new SQLModelBuilder();
-		builder.findModelFiles(modelDirectory);
-		builder.readFiles();
-
-		if(!builder.areModelsFormattedCorrectly()) {
-			return;
-		}
-
-		Map<String, SQLModel> models = builder.getCopyOfModels();
-		JDBCHandler pghandler = new PostgresHandler(models);
-		JDBCEnum jdbc = JDBCEnum.INSTANCE;
-		jdbc.addJDBCHandler("exgfx", pghandler, builder.getCopyOfModels());
-		JDBCHandler pgHandler = jdbc.getJDBCHandler();
-		// Connects the PostgreSQLhandler to the Postgres database
-		pgHandler.setConnection(sqlparser.getDb(), sqlparser.getHost(), sqlparser.getPort(),
-				sqlparser.getUsername(), sqlparser.getPassword());
-		try {
-			pgHandler.createTables();
-		} catch (SQLException e) {
-			LOGGER.fatal("SQL Exception {},\n{}", e.getMessage(), e.getCause());
-		}
+//		JsonSqlConfigParser sqlparser = new JsonSqlConfigParser();
+//		sqlparser.parseConfig(args);
+//		if(!sqlparser.configIsCorrect()) {
+//			LOGGER.fatal("Config file was not set up correctly.");
+//			return;
+//		}
+//		String modelDirectory = sqlparser.getModelDirectory();
+//		SQLModelBuilder builder = new SQLModelBuilder();
+//		builder.findModelFiles(modelDirectory);
+//		builder.readFiles();
+//
+//		if(!builder.areModelsFormattedCorrectly()) {
+//			return;
+//		}
+//
+//		Map<String, SQLModel> models = builder.getCopyOfModels();
+//		JDBCHandler pghandler = new PostgresHandler(models);
+//		JDBCEnum jdbc = JDBCEnum.INSTANCE;
+//		jdbc.addJDBCHandler("exgfx", pghandler, builder.getCopyOfModels());
+//		JDBCHandler pgHandler = jdbc.getJDBCHandler();
+//		// Connects the PostgreSQLhandler to the Postgres database
+//		pgHandler.setConnection(sqlparser.getDb(), sqlparser.getHost(), sqlparser.getPort(),
+//				sqlparser.getUsername(), sqlparser.getPassword());
+//		try {
+//			pgHandler.createTables();
+//		} catch (SQLException e) {
+//			LOGGER.fatal("SQL Exception {},\n{}", e.getMessage(), e.getCause());
+//		}
 
 		// Diskiyord setup
 		JsonConfigArgParser parser = new JsonConfigArgParser();
@@ -78,7 +78,6 @@ public class BasicMessageBot {
 		// Used if need to have bot output to this specific channel
 //		String botStuffChannelId = parser.getBotStuff();
 		DiscordApi api = new DiscordApiBuilder().setToken(parser.getAuthTok()).login().join();
-//		DiskiyordApi api = DiskiyordApiBuilder.buildApi(parser.getAuthTok());
 		// Adds a message listener
 		MessageEvent messageEvent = MessageEvent.INSTANCE;
 		messageEvent.listenOnMessage(api);

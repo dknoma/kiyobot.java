@@ -5,9 +5,12 @@ import jql.sql.jdbc.ColumnObject;
 import jql.sql.jdbc.JDBCEnum;
 import jql.sql.jdbc.JDBCHandler;
 import jql.sql.jdbc.SQLManager;
+import kiyobot.util.MessageContentType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.javacord.api.DiscordApi;
+import org.javacord.api.entity.message.Message;
+import org.javacord.api.entity.message.MessageType;
 import org.javacord.api.event.message.MessageCreateEvent;
 
 import java.sql.SQLException;
@@ -22,8 +25,9 @@ public enum MessageEvent {
 
 	private int PINGS = 0;
 
-	private final Gson GSON = new Gson();
-	private final Gson GSON_PRETTY = new GsonBuilder().disableHtmlEscaping().setPrettyPrinting().create();
+	private static final Gson GSON = new Gson();
+	private static final Gson GSON_PRETTY = new GsonBuilder().disableHtmlEscaping().setPrettyPrinting().create();
+
 	private final String EXGFX = "exgfx";
 	private final String FILENAME = "filename";
 	private final String DESCRIPTION = "description";
@@ -41,46 +45,77 @@ public enum MessageEvent {
 	 */
 	public void listenOnMessage(DiscordApi api) {
 		// Message listener
-		api.addMessageCreateListener(messageEvent -> {
-			// Gets the message from the channel
-			String message = messageEvent.getMessageContent();
-			LOGGER.info("Got message.");
-			// Gets the JDBCHandler singleton
-			JDBCHandler handler = JDBCEnum.INSTANCE.getJDBCHandler();
-			// Check if message matches command regex
-			Matcher matcher;
-			// Only check messages that start with !
-			if(message.startsWith("!")) {
-				if ((matcher = Pattern.compile(ADD_EXGFX_REGEX).matcher(message)).matches()) {
-					// !addexgfx
-					addExgfx(messageEvent, matcher);
-				} else if ((matcher = Pattern.compile(GET_EXGFX_REGEX).matcher(message)).matches()) {
-					// !getexgfx
-					getExGFXInfo(messageEvent, matcher, handler);
-				} else if (Pattern.compile(GET_ALL_EXGFX_REGEX).matcher(message).matches()) {
-					// !getallexgfx
-					getAllExGFX(messageEvent);
-				} else if (Pattern.compile("!ping").matcher(message).matches()) {
-					if (PINGS < 3) {
-						messageEvent.getChannel().sendMessage("Pong!");
-					} else if (PINGS >= 5) {
-						messageEvent.getChannel().sendMessage("https://i.imgur.com/gOJdCJS.gif");
-					} else {
-						messageEvent.getChannel().sendMessage("...");
-					}
-					PINGS++;
-				} else if (Pattern.compile("!hewwo").matcher(message).matches()) {
-					messageEvent.getChannel().sendMessage("*notices command* OwO what's this?");
-				} else if (Pattern.compile("!commands").matcher(message).matches()) {
-					getCommands(messageEvent);
-				} else {
-					messageEvent.getChannel().sendMessage(MessageArgumentError.UNKNOWN_COMMAND.getErrorMsg());
-				}
-			}
-		});
+		api.addMessageCreateListener(this::onMessage);
 	}
-
-	/**
+	
+	private void onMessage(MessageCreateEvent messageCreateEvent) {
+        final String content = messageCreateEvent.getMessageContent();
+        final MessageContentType messageType = MessageContentType.getByPrefix(content);
+        
+        switch(messageType) {
+            case BASIC_COMMAND:
+                doBasicCommand(messageCreateEvent, content);
+                break;
+            case DEFAULT:
+                break;
+        }
+    }
+    
+    private void doBasicCommand(MessageCreateEvent messageEvent, String message) {
+        // Matcher matcher;
+        if (Pattern.compile("!ping").matcher(message).matches()) {
+            if (PINGS < 3) {
+                messageEvent.getChannel().sendMessage("Pong!");
+            } else if (PINGS > 4) {
+                messageEvent.getChannel().sendMessage("https://i.imgur.com/gOJdCJS.gif");
+            } else {
+                messageEvent.getChannel().sendMessage("...");
+            }
+            PINGS++;
+        }
+    }
+    
+    
+    // Gets the message from the channel
+//	final String message = messageEvent.getMessageContent();
+//			LOGGER.info("Got message = {}", message);
+//
+//	onMessage(message);
+// 	Gets the JDBCHandler singleton
+//			JDBCHandler handler = JDBCEnum.INSTANCE.getJDBCHandler();
+    // Check if message matches command regex
+//			Matcher matcher;
+    // Only check messages that start with !
+//			if(message.startsWith("!")) {
+//				if ((matcher = Pattern.compile(ADD_EXGFX_REGEX).matcher(message)).matches()) {
+//					// !addexgfx
+//					addExgfx(messageEvent, matcher);
+//				} else if ((matcher = Pattern.compile(GET_EXGFX_REGEX).matcher(message)).matches()) {
+//					// !getexgfx
+//					getExGFXInfo(messageEvent, matcher, handler);
+//				} else if (Pattern.compile(GET_ALL_EXGFX_REGEX).matcher(message).matches()) {
+//					// !getallexgfx
+//					getAllExGFX(messageEvent);
+//				} else if (Pattern.compile("!ping").matcher(message).matches()) {
+//					if (PINGS < 3) {
+//						messageEvent.getChannel().sendMessage("Pong!");
+//					} else if (PINGS >= 5) {
+//						messageEvent.getChannel().sendMessage("https://i.imgur.com/gOJdCJS.gif");
+//					} else {
+//						messageEvent.getChannel().sendMessage("...");
+//					}
+//					PINGS++;
+//				} else if (Pattern.compile("!hewwo").matcher(message).matches()) {
+//					messageEvent.getChannel().sendMessage("*notices command* OwO what's this?");
+//				} else if (Pattern.compile("!commands").matcher(message).matches()) {
+//					getCommands(messageEvent);
+//				} else {
+//					messageEvent.getChannel().sendMessage(MessageArgumentError.UNKNOWN_COMMAND.getErrorMsg());
+//				}
+//			}
+    
+    
+    /**
 	 * Performs insert of exgfx to database
 	 * @param messageEvent - MessageCreateListener, gets the message's channels
 	 * @param matcher - Matcher that contains the group members of the input pattern

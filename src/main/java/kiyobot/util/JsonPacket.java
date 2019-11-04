@@ -62,16 +62,6 @@ public class JsonPacket {
 		return this.object.toString();
 	}
 
-	private static final class ValueToMap {
-		private Object value;
-		private ClassType classType;
-
-		private ValueToMap(Object value) {
-			this.value = value;
-			this.classType = ClassType.getByClass(value.getClass());
-		}
-	}
-
 	public static final class Builder {
 		private final Map<String, ValueToMap> keyValuePairs;
 
@@ -138,5 +128,16 @@ public class JsonPacket {
 			packet.object = object_;
 			return packet;
 		}
+
+		private static final class ValueToMap {
+			private Object value;
+			private ClassType classType;
+
+			private ValueToMap(Object value) {
+				this.value = value;
+				this.classType = ClassType.getByClass(value.getClass());
+			}
+		}
+
 	}
 }
