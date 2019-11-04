@@ -73,8 +73,7 @@ public class JsonPacket {
 		}
 
 		public Builder put(String key, Object value) {
-			final ValueToMap valueToMap = new ValueToMap(value);
-			this.keyValuePairs.put(key, valueToMap);
+			this.keyValuePairs.put(key, new ValueToMap(value));
 			return this;
 		}
 

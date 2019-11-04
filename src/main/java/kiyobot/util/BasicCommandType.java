@@ -34,7 +34,8 @@ public enum BasicCommandType {
     
     // Pattern.compile("!ping").matcher(message).matches()
     public static BasicCommandType getByCommandMessage(String message) {
-        final String[] parts = message.split("\\W++");
+        final String[] parts = message.split("\\s+");
+        // System.out.printf("parts=%s\n", Arrays.toString(parts));
         final String command = parts[0];
         return INSTANCE_BY_COMMAND.getOrDefault(command, DEFAULT);
     }
