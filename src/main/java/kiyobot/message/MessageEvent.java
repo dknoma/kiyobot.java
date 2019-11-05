@@ -7,7 +7,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.event.message.MessageCreateEvent;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -24,6 +23,8 @@ public enum MessageEvent {
 	
 	private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(100);
 	
+	private static final String SUGGESTION_LINK = "https://forms.gle/Y6pKqMAgYUS6eJJL7";
+	
 	private static final String COMMAND_LIST;
     
     static {
@@ -37,7 +38,7 @@ public enum MessageEvent {
     private ScheduledFuture pingExpiration;
 	/**
 	 * Adds message listener to the api, which allows the bot to listen to Discord messages
-	 * @param api - Diskiyord API class
+	 * @param api - Javacord API class
 	 */
 	public void listenOnMessage(DiscordApi api) {
 		api.addMessageCreateListener(this::onMessage);
@@ -71,13 +72,16 @@ public enum MessageEvent {
 	    switch(commandType) {
             case COMMANDS:
             case HELP:
-                encodeCommandsList(messageEvent);
+                doEncodeCommandsList(messageEvent);
                 break;
             case HEWWO:
-                encodeHewwo(messageEvent);
+                doEncodeHewwo(messageEvent);
                 break;
             case PING:
-                encodePing(messageEvent);
+                doEncodePing(messageEvent);
+                break;
+            case SUGGESTION:
+                doEncodeSuggestion(messageEvent);
                 break;
             case DEFAULT:
                 break;
@@ -85,25 +89,18 @@ public enum MessageEvent {
     }
     
     /**
-     * Sends unkown command message to the channel
+     * Sends a list of the current commands to the channel
      * @param messageEvent;
      */
-    private void encodeCommandsList(MessageCreateEvent messageEvent) {
+    private void doEncodeCommandsList(MessageCreateEvent messageEvent) {
         messageEvent.getChannel().sendMessage(COMMAND_LIST);
-    }
-    
-    private static void getBasicCommandList(StringBuilder builder) {
-        builder.append("**Basic Bot Commands**\n------------------------\n");
-        for (BasicCommandType commandType : BasicCommandType.values()) {
-            builder.append(String.format("%s\n",commandType.getCommand()));
-        }
     }
     
     /**
      * What is this?
      * @param messageEvent message event
      */
-    private void encodeHewwo(MessageCreateEvent messageEvent) {
+    private void doEncodeHewwo(MessageCreateEvent messageEvent) {
         messageEvent.getChannel().sendMessage("OWO what's this?");
     }
     
@@ -111,7 +108,7 @@ public enum MessageEvent {
      * Perform ping command
      * @param messageEvent message event
      */
-    private void encodePing(MessageCreateEvent messageEvent) {
+    private void doEncodePing(MessageCreateEvent messageEvent) {
         schedulePingExpiration();
         if (PINGS > 4) {
             messageEvent.getChannel().sendMessage("https://i.imgur.com/gOJdCJS.gif");
@@ -121,6 +118,17 @@ public enum MessageEvent {
             messageEvent.getChannel().sendMessage("Pong!");
         }
         PINGS++;
+    }
+    
+    private void doEncodeSuggestion(MessageCreateEvent messageEvent) {
+        messageEvent.getChannel().sendMessage(String.format("**Send some bot feature suggestions with this link**\n%s\n", SUGGESTION_LINK));
+    }
+    
+    private static void getBasicCommandList(StringBuilder builder) {
+        builder.append("**Basic Bot Commands**\n------------------------\n");
+        for (BasicCommandType commandType : BasicCommandType.values()) {
+            builder.append(String.format("%s\n",commandType.getCommand()));
+        }
     }
     
     private void schedulePingExpiration() {
