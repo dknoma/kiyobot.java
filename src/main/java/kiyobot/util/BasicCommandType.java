@@ -6,6 +6,7 @@ import java.util.Map;
 
 public enum BasicCommandType {
     COMMANDS("!commands"),
+    DOC("!doc"),
     HELP("!help"),
     HEWWO("!hewwo"),
     PING("!ping"),

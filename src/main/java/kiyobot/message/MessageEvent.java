@@ -24,6 +24,7 @@ public enum MessageEvent {
 	private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(100);
 	
 	private static final String SUGGESTION_LINK = "https://forms.gle/Y6pKqMAgYUS6eJJL7";
+	private static final String DOC_LINK_VIEW_ONLY = "https://docs.google.com/document/d/1gmVzkkEiOadXF6ThIalBqzCuuyrGVs2ZGUzqcGeQZyE/edit?usp=sharing";
 	
 	private static final String COMMAND_LIST;
     
@@ -74,6 +75,9 @@ public enum MessageEvent {
             case HELP:
                 doEncodeCommandsList(messageEvent);
                 break;
+            case DOC:
+                doEncodeDocLink(messageEvent);
+                break;
             case HEWWO:
                 doEncodeHewwo(messageEvent);
                 break;
@@ -84,6 +88,7 @@ public enum MessageEvent {
                 doEncodeSuggestion(messageEvent);
                 break;
             case DEFAULT:
+                doEncodeUnknownCommand(messageEvent);
                 break;
         }
     }
@@ -94,6 +99,10 @@ public enum MessageEvent {
      */
     private void doEncodeCommandsList(MessageCreateEvent messageEvent) {
         messageEvent.getChannel().sendMessage(COMMAND_LIST);
+    }
+    
+    private void doEncodeDocLink(MessageCreateEvent messageEvent) {
+        messageEvent.getChannel().sendMessage(String.format("**Viewable design document link**\n%s\n", DOC_LINK_VIEW_ONLY));
     }
     
     /**
@@ -121,14 +130,21 @@ public enum MessageEvent {
     }
     
     private void doEncodeSuggestion(MessageCreateEvent messageEvent) {
-        messageEvent.getChannel().sendMessage(String.format("**Send some bot feature suggestions with this link**\n%s\n", SUGGESTION_LINK));
+        messageEvent.getChannel().sendMessage(String.format("**Send some bot feature suggestions with this link**\n%s\n",
+                SUGGESTION_LINK));
+    }
+    
+    private void doEncodeUnknownCommand(MessageCreateEvent messageEvent) {
+        messageEvent.getChannel().sendMessage("Unknown command");
     }
     
     private static void getBasicCommandList(StringBuilder builder) {
-        builder.append("**Basic Bot Commands**\n------------------------\n");
+        builder.append("**Basic Bot Commands**\n");
+        builder.append("```");
         for (BasicCommandType commandType : BasicCommandType.values()) {
             builder.append(String.format("%s\n",commandType.getCommand()));
         }
+        builder.append("```");
     }
     
     private void schedulePingExpiration() {
