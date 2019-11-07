@@ -26,20 +26,30 @@ public class JsonPacket {
 	private static final Gson gson = new GsonBuilder().create();
 	private static final Logger LOGGER = LogManager.getLogger();
 
+	private final Map<String, Builder.ValueToMap> valueTypes;
+	
 	private JsonObject object;
 
 	public JsonPacket() {
+		this.valueTypes = new LinkedHashMap<>();
 		this.object = new JsonObject();
 	}
 
 	public JsonPacket(String json) {
+		this.valueTypes = new LinkedHashMap<>();
 		this.object = new JsonObject();
 		mapJson(json);
 	}
-
-	public JsonPacket(JsonObject json) {
-		this.object = json;
+	
+	private JsonPacket(Map<String, Builder.ValueToMap> valueTypes) {
+		this.valueTypes = valueTypes;
+		this.object = new JsonObject();
 	}
+
+	// public JsonPacket(JsonObject json) {
+	// 	this.valueTypes = new LinkedHashMap<>();
+	// 	this.object = json;
+	// }
 
 	/**
 	 * Returns a new Builder instance.
@@ -48,7 +58,11 @@ public class JsonPacket {
 	public static Builder newBuilder() {
 		return new Builder();
 	}
-
+	
+	public Builder.ValueToMap get(String key) {
+		return valueTypes.get(key);
+	}
+	
 	/**
 	 * Turns the given string into a JsonObject, and builds the mapping for the key/value pairs
 	 * @param string -
@@ -72,14 +86,12 @@ public class JsonPacket {
 			this.keyValuePairs = new LinkedHashMap<>();
 		}
 
-		public Builder put(String key, Object value) {
-			this.keyValuePairs.put(key, new ValueToMap(value));
+		public <T> Builder put(String key, T value) {
+			this.keyValuePairs.put(key, new ValueToMap<>(value));
 			return this;
 		}
 
 		public JsonPacket build() {
-			final JsonPacket packet = new JsonPacket();
-
 			keyValuePairs.forEach((k, v) -> {
 				switch(v.classType) {
 					case BOOLEAN:
@@ -123,18 +135,28 @@ public class JsonPacket {
 						break;
 				}
 			});
-
+			
+			final JsonPacket packet = new JsonPacket(keyValuePairs);
 			packet.object = object_;
 			return packet;
 		}
 
-		private static final class ValueToMap {
-			private Object value;
-			private ClassType classType;
+		public static final class ValueToMap<T> {
+			private final T value;
+			private final ClassType classType;
 
-			private ValueToMap(Object value) {
+			private ValueToMap(T value) {
 				this.value = value;
 				this.classType = ClassType.getByClass(value.getClass());
+			}
+			
+			public T getValue() {
+				return value;
+			}
+			
+			@Override
+			public String toString() {
+				return String.format("VALUE=[%s, %s]", value, classType);
 			}
 		}
 
