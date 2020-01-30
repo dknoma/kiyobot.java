@@ -340,7 +340,7 @@ public enum MessageEvent {
         builder.append("**Basic Bot Commands**\n");
         builder.append("```");
         for (BasicCommandType commandType : BasicCommandType.values()) {
-            builder.append(String.format("%s\n",commandType.getCommand()));
+            builder.append(String.format("%s\n--------\n    + %s\n", commandType.getCommand(), commandType.getDescription()));
         }
         builder.append("```");
     }

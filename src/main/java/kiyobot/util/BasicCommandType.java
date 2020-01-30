@@ -5,14 +5,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 public enum BasicCommandType {
-    COMMANDS("!commands"),
-    CELTX("!celtx"),
-    DOC("!doc"),
-    HELP("!help"),
-    HEWWO("!hewwo"),
-    PING("!ping"),
-    SUGGESTION("!suggestion"),
-    REMIND_ME("!remindme"),
+    COMMANDS("!commands", "List of useful commands."),
+    CELTX("!celtx", "Provides a link to the celtx docs."),
+    DOC("!doc", "Provides a link to the project docs."),
+    HELP("!help", "List of useful commands."),
+    HEWWO("!hewwo", "What's dis?"),
+    PING("!ping", "Pong!"),
+    SUGGESTION("!suggestion", "Provides a link to a Google Forms to create suggestions for me!"),
+    REMIND_ME("!remindme", "Gives me a message to remind and ping you after a certain amount of time. Format: !remindme <number> <unit: valid units=[s, m, h, d]> <message>"),
     DEFAULT();
     
     private static final Map<String, BasicCommandType> INSTANCE_BY_COMMAND = new HashMap<>();
@@ -23,17 +23,29 @@ public enum BasicCommandType {
     }
     
     private final String command;
-    
+    private final String description;
+
     BasicCommandType() {
         this.command = "";
+        this.description = "";
     }
     
     BasicCommandType(String command) {
         this.command = command;
+        this.description = "TODO";
     }
-    
+
+    BasicCommandType(String command, String description) {
+        this.command = command;
+        this.description = description;
+    }
+
     public String getCommand() {
         return command;
+    }
+
+    public String getDescription() {
+        return description;
     }
     
     // Pattern.compile("!ping").matcher(message).matches()
