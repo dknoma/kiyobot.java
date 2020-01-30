@@ -94,6 +94,7 @@ public enum MessageEvent {
             final long authorId = doc.getLong(AUTHOR_ID_KEY);
             final long channelId = doc.getLong(CHANNEL_ID_KEY);
             final long time = doc.getLong(TIME_KEY);
+            final long targetTime = doc.getLong(TARGET_TIME_KEY);
             final ReminderTimeUnit unit = ReminderTimeUnit.getUnit(doc.getString(TIME_UNIT_KEY));
             final String reminderMessage = doc.getString(REMINDER_MESSAGE_KEY);
     
@@ -105,19 +106,19 @@ public enum MessageEvent {
             final TimeUnit timeUnit;
             switch(unit) {
                 case SECONDS:
-                    convert = currentMillis / 1000 - time;
+                    convert = currentMillis / 1000 - targetTime;
                     timeUnit = TimeUnit.SECONDS;
                     break;
                 case MINUTES:
-                    convert = currentMillis / 1000 / 60 - time;
+                    convert = currentMillis / 1000 / 60 - targetTime;
                     timeUnit = TimeUnit.MINUTES;
                     break;
                 case HOURS:
-                    convert = currentMillis / 1000 / 60 / 60 - time;
+                    convert = currentMillis / 1000 / 60 / 60 - targetTime;
                     timeUnit = TimeUnit.HOURS;
                     break;
                 case DAYS:
-                    convert = currentMillis / 1000 / 60 / 60 / 24 - time;
+                    convert = currentMillis / 1000 / 60 / 60 / 24 - targetTime;
                     timeUnit = TimeUnit.DAYS;
                     break;
                 default:
