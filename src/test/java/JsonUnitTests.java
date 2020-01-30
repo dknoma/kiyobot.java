@@ -34,7 +34,7 @@ public class JsonUnitTests {
 		LOGGER.info("packet:          {}", packetString);
 		System.out.printf("packet:          %s\n", packetString);
 		
-		System.out.printf("aaaaaa=%s\n", jsonPacket.get("data"));
+		System.out.printf("aaaaaa=%s\n", jsonPacket.get("data").getValue());
 
 		final JsonParser parser = new JsonParser();
 		final JsonElement hardcoded = parser.parse(jsonHardcode);

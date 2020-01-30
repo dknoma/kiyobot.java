@@ -2,11 +2,14 @@ package kiyobot.message;
 
 import com.google.gson.*;
 import kiyobot.util.BasicCommandType;
+import kiyobot.util.Buzzword;
 import kiyobot.util.MessageContentType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.javacord.api.DiscordApi;
+import org.javacord.api.entity.emoji.Emoji;
 import org.javacord.api.event.message.MessageCreateEvent;
+import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -25,6 +28,7 @@ public enum MessageEvent {
 	
 	private static final String SUGGESTION_LINK = "https://forms.gle/Y6pKqMAgYUS6eJJL7";
 	private static final String DOC_LINK_VIEW_ONLY = "https://docs.google.com/document/d/1gmVzkkEiOadXF6ThIalBqzCuuyrGVs2ZGUzqcGeQZyE/edit?usp=sharing";
+	private static final String CELTX_LINK = "https://www.celtx.com/a/ux/#documents";
 	
 	private static final String COMMAND_LIST;
     
@@ -47,19 +51,42 @@ public enum MessageEvent {
     
     /**
      * Parse message and checks the content type to determine whether to respond to a command or not
-     * @param messageCreateEvent message event
+     * @param messageEvent message event
      */
-	private void onMessage(MessageCreateEvent messageCreateEvent) {
-        final String content = messageCreateEvent.getMessageContent();
+	private void onMessage(MessageCreateEvent messageEvent) {
+        final String content = messageEvent.getMessageContent();
         final MessageContentType messageType = MessageContentType.getByPrefix(content);
         
         switch(messageType) {
             case BASIC_COMMAND:
-                decodeBasicCommand(messageCreateEvent, content);
+                decodeBasicCommand(messageEvent, content);
+                break;
+            case DEFAULT:
+                checkForBuzzword(messageEvent, content);
+                break;
+        }
+    }
+    
+    private void checkForBuzzword(MessageCreateEvent messageEvent, String message) {
+	    final Buzzword buzzword = Buzzword.getByFirstMatch(message);
+	    switch(buzzword) {
+            case AYYLMAO:
+                doEncodeAyylmao(messageEvent);
+                break;
+            case OWO:
+                doEncodeOwoBuzzword(messageEvent);
                 break;
             case DEFAULT:
                 break;
         }
+    }
+    
+    private void doEncodeAyylmao(MessageCreateEvent messageEvent) {
+        messageEvent.getChannel().sendMessage("lmao");
+    }
+    
+    private void doEncodeOwoBuzzword(MessageCreateEvent messageEvent) {
+        messageEvent.getMessage().addReaction(":oworld:642815137153286144");
     }
     
     /**
@@ -74,6 +101,9 @@ public enum MessageEvent {
             case COMMANDS:
             case HELP:
                 doEncodeCommandsList(messageEvent);
+                break;
+            case CELTX:
+                doEncodeCeltx(messageEvent);
                 break;
             case DOC:
                 doEncodeDocLink(messageEvent);
@@ -103,6 +133,10 @@ public enum MessageEvent {
     
     private void doEncodeDocLink(MessageCreateEvent messageEvent) {
         messageEvent.getChannel().sendMessage(String.format("**Viewable design document link**\n%s\n", DOC_LINK_VIEW_ONLY));
+    }
+    
+    private void doEncodeCeltx(MessageCreateEvent messageEvent) {
+        messageEvent.getChannel().sendMessage(String.format("**Celtx story collab link**\n%s\n", CELTX_LINK));
     }
     
     /**
