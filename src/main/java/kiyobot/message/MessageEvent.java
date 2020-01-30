@@ -1,17 +1,18 @@
 package kiyobot.message;
 
-import static db.mongo.documents.DocumentConstants.UserReminderDocument.CHANNEL_ID_KEY;
-import static db.mongo.documents.DocumentConstants.UserReminderDocument.AUTHOR_ID_KEY;
-import static db.mongo.documents.DocumentConstants.UserReminderDocument.REMINDER_MESSAGE_KEY;
-import static db.mongo.documents.DocumentConstants.UserReminderDocument.TARGET_TIME_KEY;
-import static db.mongo.documents.DocumentConstants.UserReminderDocument.TIME_KEY;
-import static db.mongo.documents.DocumentConstants.UserReminderDocument.TIME_UNIT_KEY;
+import static db.mongo.documents.util.DocumentConstants.UserReminderDocumentKeys.CHANNEL_ID_KEY;
+import static db.mongo.documents.util.DocumentConstants.UserReminderDocumentKeys.AUTHOR_ID_KEY;
+import static db.mongo.documents.util.DocumentConstants.UserReminderDocumentKeys.REMINDER_MESSAGE_KEY;
+import static db.mongo.documents.util.DocumentConstants.UserReminderDocumentKeys.TARGET_TIME_KEY;
+import static db.mongo.documents.util.DocumentConstants.UserReminderDocumentKeys.TIME_KEY;
+import static db.mongo.documents.util.DocumentConstants.UserReminderDocumentKeys.TIME_UNIT_KEY;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
+import db.mongo.documents.UserReminderDocument;
 import db.mongo.settings.KiyoMongoSettings;
 import db.mongo.settings.MongoCollectionType;
 import kiyobot.reminders.ReminderTimeUnit;
@@ -311,13 +312,16 @@ public enum MessageEvent {
                 
                 final MongoCollection<Document> collection =
                         db.getCollection(MongoCollectionType.USER_REMINDERS.collectionName());
-                Document doc = new Document();
-                doc.put(AUTHOR_ID_KEY, userId);
-                doc.put(CHANNEL_ID_KEY, channel.getId());
-                doc.put(TIME_KEY, time);
-                doc.put(TIME_UNIT_KEY, timeUnit.suffix());
-                doc.put(REMINDER_MESSAGE_KEY, reminderMessage);
-                doc.put(TARGET_TIME_KEY, targetTime);
+                UserReminderDocument document = new UserReminderDocument();
+                document.putData(userId, channel.getId(), time, timeUnit.suffix(), reminderMessage, targetTime);
+                // Document doc = new Document();
+                // doc.put(AUTHOR_ID_KEY, userId);
+                // doc.put(CHANNEL_ID_KEY, channel.getId());
+                // doc.put(TIME_KEY, time);
+                // doc.put(TIME_UNIT_KEY, timeUnit.suffix());
+                // doc.put(REMINDER_MESSAGE_KEY, reminderMessage);
+                // doc.put(TARGET_TIME_KEY, targetTime);
+                Document doc = document.getDocument();
                 collection.insertOne(doc);
     
                 scheduleReminder(() -> {
