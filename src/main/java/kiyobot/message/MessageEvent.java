@@ -29,6 +29,8 @@ import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.MessageAuthor;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.event.server.ServerJoinEvent;
+
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -339,9 +341,13 @@ public enum MessageEvent {
     private static void getBasicCommandList(StringBuilder builder) {
         builder.append("**Basic Bot Commands**\n");
         builder.append("```");
-        for (BasicCommandType commandType : BasicCommandType.values()) {
-            builder.append(String.format("%s\n--------\n    + %s\n", commandType.getCommand(), commandType.getDescription()));
-        }
+        Arrays.stream(BasicCommandType.values())
+              .filter(type -> type != BasicCommandType.DEFAULT)
+              .forEach(commandType -> {
+                  builder.append(String.format("%s\n----------------\n + %s\n",
+                                               commandType.getCommand(),
+                                               commandType.getDescription()));
+              });
         builder.append("```");
     }
     
