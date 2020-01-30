@@ -104,13 +104,6 @@
                 <configuration>
                     <outputDirectory>./</outputDirectory>
                     <finalName>full-${project.artifactId}-${project.version}</finalName>
-                    <filters>
-                        <filter>
-                            <includes>
-                                <include>**</include>
-                            </includes>
-                        </filter>
-                    </filters>
                 </configuration>
             </plugin>
         </plugins>
