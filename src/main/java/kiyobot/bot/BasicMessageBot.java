@@ -8,6 +8,7 @@ import jql.sql.model.SQLModel;
 import jql.sql.util.JsonSqlConfigParser;
 import jql.sql.util.SQLModelBuilder;
 import kiyobot.message.MessageEvent;
+import kiyobot.util.HerokuEnv;
 import kiyobot.util.JsonConfigArgParser;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -43,44 +44,24 @@ public class BasicMessageBot {
 	private static final Logger LOGGER = LogManager.getLogger();
 
 	public static void main(String[] args) {
-		// db setup
-//		JsonSqlConfigParser sqlparser = new JsonSqlConfigParser();
-//		sqlparser.parseConfig(args);
-//		if(!sqlparser.configIsCorrect()) {
-//			LOGGER.fatal("Config file was not set up correctly.");
-//			return;
-//		}
-//		String modelDirectory = sqlparser.getModelDirectory();
-//		SQLModelBuilder builder = new SQLModelBuilder();
-//		builder.findModelFiles(modelDirectory);
-//		builder.readFiles();
-//
-//		if(!builder.areModelsFormattedCorrectly()) {
-//			return;
-//		}
-//
-//		Map<String, SQLModel> models = builder.getCopyOfModels();
-//		JDBCHandler pghandler = new PostgresHandler(models);
-//		JDBCEnum jdbc = JDBCEnum.INSTANCE;
-//		jdbc.addJDBCHandler("exgfx", pghandler, builder.getCopyOfModels());
-//		JDBCHandler pgHandler = jdbc.getJDBCHandler();
-//		// Connects the PostgreSQLhandler to the Postgres database
-//		pgHandler.setConnection(sqlparser.getDb(), sqlparser.getHost(), sqlparser.getPort(),
-//				sqlparser.getUsername(), sqlparser.getPassword());
-//		try {
-//			pgHandler.createTables();
-//		} catch (SQLException e) {
-//			LOGGER.fatal("SQL Exception {},\n{}", e.getMessage(), e.getCause());
-//		}
-
 		// Diskiyord setup
-		final JsonConfigArgParser parser = new JsonConfigArgParser();
-		parser.parseConfig();
+// 		final JsonConfigArgParser parser = new JsonConfigArgParser();
+// 		parser.parseConfig();
+//
+// 		final KiyoMongoSettings settings = new KiyoMongoSettings(parser.getMongoUser(), parser.getMongoPass());
+// 		// Used if need to have bot output to this specific channel
+// //		String botStuffChannelId = parser.getBotStuff();
+// 		final DiscordApi api = new DiscordApiBuilder().setToken(parser.getAuthTok()).login().join();
+		HerokuEnv env = new HerokuEnv();
+		env.parseEnv();
+		final String authTok = env.getAuthTok();
+		final String mongoUser = env.getMongoUser();
+		final String mongoPass = env.getMongoPass();
 		
-		final KiyoMongoSettings settings = new KiyoMongoSettings(parser.getMongoUser(), parser.getMongoPass());
+		final KiyoMongoSettings settings = new KiyoMongoSettings(mongoUser, mongoPass);
 		// Used if need to have bot output to this specific channel
 //		String botStuffChannelId = parser.getBotStuff();
-		final DiscordApi api = new DiscordApiBuilder().setToken(parser.getAuthTok()).login().join();
+		final DiscordApi api = new DiscordApiBuilder().setToken(authTok).login().join();
 		// Adds a message listener
 		MessageEvent messageEvent = MessageEvent.INSTANCE;
 		messageEvent.listenOnMessage(api, settings);
