@@ -5,8 +5,11 @@ import com.mongodb.MongoClientSettings;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoDatabase;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public final class KiyoMongoSettings {
+    private static final Logger LOGGER = LogManager.getLogger();
     private static final String CONNECTION_STRING_FORMAT = "mongodb+srv://%s:%s@botto-j6mtg.mongodb.net/test?retryWrites=true&w=majority";
     
     private ConnectionString connectionStringFormat;

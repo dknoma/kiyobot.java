@@ -1,16 +1,17 @@
 package kiyobot.message;
 
 import static db.mongo.documents.DocumentConstants.UserReminderDocument.CHANNEL_ID_KEY;
-import static db.mongo.documents.DocumentConstants.UserReminderDocument.DISPLAY_NAME_KEY;
+import static db.mongo.documents.DocumentConstants.UserReminderDocument.AUTHOR_ID_KEY;
 import static db.mongo.documents.DocumentConstants.UserReminderDocument.REMINDER_MESSAGE_KEY;
+import static db.mongo.documents.DocumentConstants.UserReminderDocument.TARGET_TIME_KEY;
 import static db.mongo.documents.DocumentConstants.UserReminderDocument.TIME_KEY;
 import static db.mongo.documents.DocumentConstants.UserReminderDocument.TIME_UNIT_KEY;
-import com.google.gson.*;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
-import db.mongo.documents.DocumentConstants;
 import db.mongo.settings.KiyoMongoSettings;
 import db.mongo.settings.MongoCollectionType;
 import kiyobot.reminders.ReminderTimeUnit;
@@ -26,10 +27,8 @@ import org.javacord.api.entity.channel.ServerChannel;
 import org.javacord.api.entity.channel.TextChannel;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.MessageAuthor;
-import org.javacord.api.event.message.CertainMessageEvent;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.event.server.ServerJoinEvent;
-import java.sql.Time;
 import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -49,7 +48,7 @@ public enum MessageEvent {
 	
 	private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(100);
 	
-	private static final Pattern REMINDER_REGEX = Pattern.compile("!reminder ([0-9])+ (s|m|h|d|w|mon) ?(.*)");
+	private static final Pattern REMINDER_REGEX = Pattern.compile("!remindme ([0-9])+ (s|m|h|d|w|mon) ?(.*)");
 	private static final Matcher REMINDER_MATCHER = REMINDER_REGEX.matcher("").reset();
 	
 	private static final String SUGGESTION_LINK = "https://forms.gle/Y6pKqMAgYUS6eJJL7";
@@ -92,10 +91,10 @@ public enum MessageEvent {
         
         while(cursor.hasNext()) {
             final Document doc = cursor.next();
-            final String displayName = doc.getString(DISPLAY_NAME_KEY);
+            final long authorId = doc.getLong(AUTHOR_ID_KEY);
             final long channelId = doc.getLong(CHANNEL_ID_KEY);
             final long time = doc.getLong(TIME_KEY);
-            final TimeUnit unit = doc.get(TIME_UNIT_KEY, TimeUnit.class);
+            final ReminderTimeUnit unit = ReminderTimeUnit.getUnit(doc.getString(TIME_UNIT_KEY));
             final String reminderMessage = doc.getString(REMINDER_MESSAGE_KEY);
     
             final Optional<ServerChannel> channelById = joinEvent.getServer().getChannelById(channelId);
@@ -103,37 +102,35 @@ public enum MessageEvent {
             final long currentMillis = System.currentTimeMillis();
             
             final long convert;
+            final TimeUnit timeUnit;
             switch(unit) {
                 case SECONDS:
                     convert = currentMillis / 1000 - time;
+                    timeUnit = TimeUnit.SECONDS;
                     break;
                 case MINUTES:
                     convert = currentMillis / 1000 / 60 - time;
+                    timeUnit = TimeUnit.MINUTES;
                     break;
                 case HOURS:
                     convert = currentMillis / 1000 / 60 / 60 - time;
+                    timeUnit = TimeUnit.HOURS;
                     break;
                 case DAYS:
                     convert = currentMillis / 1000 / 60 / 60 / 24 - time;
+                    timeUnit = TimeUnit.DAYS;
                     break;
                 default:
                     convert = 0;
+                    timeUnit = TimeUnit.SECONDS;
                     break;
             }
     
-            scheduleReminder(channelById.flatMap(Channel::asTextChannel).get(), displayName, convert > 0 ? convert : 0, unit, reminderMessage);
+            scheduleReminder(() -> {
+                channelById.flatMap(Channel::asTextChannel).get().sendMessage(String.format("<@%s> - %s", authorId, reminderMessage));
+                collection.deleteOne(doc);
+            }, convert > 0 ? convert : 0, timeUnit);
         }
-        
-        // scheduleReminder(messageEvent, displayName, time, timeUnit, displayName);
-        //
-        // final MongoCollection<Document> collection =
-        //         db.getCollection(MongoCollectionType.USER_REMINDERS.collectionName());
-        // Document doc = new Document();
-        // doc.put("displayName", displayName);
-        // doc.put("time", time);
-        // doc.put("unit", timeUnit);
-        // doc.put("reminderMessage", reminderMessage);
-        // collection.insertOne(doc);
     }
 	
     /**
@@ -183,6 +180,7 @@ public enum MessageEvent {
      */
     private void decodeBasicCommand(MessageCreateEvent messageEvent, String message) {
 	    final BasicCommandType commandType = BasicCommandType.getByCommandMessage(message);
+	    LOGGER.info("Logging basic command.");
 	    
 	    switch(commandType) {
             case COMMANDS:
@@ -204,7 +202,7 @@ public enum MessageEvent {
             case SUGGESTION:
                 doEncodeSuggestion(messageEvent);
                 break;
-            case REMINDER:
+            case REMIND_ME:
                 doEncodeReminder(messageEvent);
                 break;
             case DEFAULT:
@@ -268,61 +266,70 @@ public enum MessageEvent {
         final Message message = messageEvent.getMessage();
         final String text = message.getContent();
         REMINDER_MATCHER.reset(text);
+        LOGGER.info("message = {}", text);
         
         if(REMINDER_MATCHER.matches()) {
+            LOGGER.info("matched regex");
             final String unit = REMINDER_MATCHER.group(2);
             final String reminderMessage = REMINDER_MATCHER.group(3);
             try {
                 final MessageAuthor author = message.getAuthor();
-                final String displayName = author.getDisplayName();
+                final long userId = author.getId();
 
                 long time = Long.parseLong(REMINDER_MATCHER.group(1));
                 final ReminderTimeUnit timeUnit = ReminderTimeUnit.getUnit(unit);
-                
+    
+                final long targetTime;
                 final TimeUnit targetUnit;
                 switch (timeUnit) {
-                    case SECOND:
-                        // final long endDate = System.currentTimeMillis() + time;
+                    case SECONDS:
+                        targetTime = time * 1000 + System.currentTimeMillis();
                         targetUnit = TimeUnit.SECONDS;
                         break;
-                    case MINUTE:
+                    case MINUTES:
+                        targetTime = time * 1000 * 60 + System.currentTimeMillis();
                         targetUnit = TimeUnit.MINUTES;
                         break;
-                    case HOUR:
+                    case HOURS:
+                        targetTime = time * 1000 * 60 * 60 + System.currentTimeMillis();
                         targetUnit = TimeUnit.HOURS;
                         break;
-                    case DAY:
+                    case DAYS:
+                        targetTime = time * 1000 * 60 * 60 * 24 + System.currentTimeMillis();
                         targetUnit = TimeUnit.DAYS;
-                        break;
-                    case WEEK:
-                        targetUnit = TimeUnit.DAYS;
-                        time *= 7;
                         break;
                     default:
+                        targetTime = 0;
                         targetUnit = TimeUnit.MILLISECONDS;
                         break;
                 }
-                scheduleReminder(channel, displayName, time, targetUnit, displayName);
-    
+                
+                LOGGER.info("user: {}({}), channelId: {}, time: {}, unit: {}, message: {}",
+                            author.getDisplayName(), userId, channel.getId(), time, timeUnit, reminderMessage);
+                
                 final MongoCollection<Document> collection =
                         db.getCollection(MongoCollectionType.USER_REMINDERS.collectionName());
                 Document doc = new Document();
-                doc.put(DISPLAY_NAME_KEY, displayName);
+                doc.put(AUTHOR_ID_KEY, userId);
                 doc.put(CHANNEL_ID_KEY, channel.getId());
                 doc.put(TIME_KEY, time);
-                doc.put(TIME_UNIT_KEY, timeUnit);
+                doc.put(TIME_UNIT_KEY, timeUnit.suffix());
                 doc.put(REMINDER_MESSAGE_KEY, reminderMessage);
+                doc.put(TARGET_TIME_KEY, targetTime);
                 collection.insertOne(doc);
+    
+                scheduleReminder(() -> {
+                    channel.sendMessage(String.format("<@%s> - %s", userId, reminderMessage));
+                    collection.deleteOne(doc);
+                }, time, targetUnit);
             } catch(NumberFormatException nfe) {
                 LOGGER.error(nfe.getMessage());
             }
         }
     }
     
-    private static void scheduleReminder(TextChannel channel, String displayName, long time, TimeUnit timeUnit, String reminderMessage) {
-        final ScheduledFuture<?> future = scheduler.schedule(() -> {
-            channel.sendMessage(String.format("@%s %s", displayName, reminderMessage));
-        }, time, timeUnit);
+    private static void scheduleReminder(Runnable run, long time, TimeUnit timeUnit) {
+        final ScheduledFuture<?> future = scheduler.schedule(run, time, timeUnit);
     }
     
     private void doEncodeUnknownCommand(MessageCreateEvent messageEvent) {

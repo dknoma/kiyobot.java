@@ -12,7 +12,7 @@ public enum BasicCommandType {
     HEWWO("!hewwo"),
     PING("!ping"),
     SUGGESTION("!suggestion"),
-    REMINDER("!reminder"),
+    REMIND_ME("!remindme"),
     DEFAULT();
     
     private static final Map<String, BasicCommandType> INSTANCE_BY_COMMAND = new HashMap<>();

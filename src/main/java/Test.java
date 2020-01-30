@@ -3,11 +3,11 @@ import java.util.regex.Pattern;
 
 public class Test {
 	
-	private static final Pattern REMINDER_REGEX = Pattern.compile("!reminder ([0-9])+ (s|m|h|d|w|mon) ?(.*)");
+	private static final Pattern REMINDER_REGEX = Pattern.compile("!remindme ([0-9])+ (s|m|h|d|w|mon) ?(.*)");
 	private static final Matcher REMINDER_MATCHER = REMINDER_REGEX.matcher("").reset();
 	
 	public static void main(String[] args) {
-		REMINDER_MATCHER.reset("!reminder 1 d henlo person there");
+		REMINDER_MATCHER.reset("!remindme 1 d henlo person there");
 		REMINDER_MATCHER.matches();
 		
 		System.out.println(REMINDER_MATCHER.group(3));

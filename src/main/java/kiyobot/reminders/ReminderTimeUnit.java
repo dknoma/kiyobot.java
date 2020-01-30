@@ -5,11 +5,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 public enum ReminderTimeUnit {
-    SECOND("s"),
-    MINUTE("m"),
-    HOUR("h"),
-    DAY("d"),
-    WEEK("w");
+    SECONDS("s"),
+    MINUTES("m"),
+    HOURS("h"),
+    DAYS("d");
     
     private static final Map<String, ReminderTimeUnit> UNIT_BY_SUFFIX = new HashMap<>();
     
@@ -29,6 +28,6 @@ public enum ReminderTimeUnit {
     }
     
     public static ReminderTimeUnit getUnit(String unit) {
-        return UNIT_BY_SUFFIX.getOrDefault(unit.toLowerCase(), SECOND);
+        return UNIT_BY_SUFFIX.getOrDefault(unit.toLowerCase(), SECONDS);
     }
 }
