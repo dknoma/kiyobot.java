@@ -7,8 +7,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public enum Buzzword {
-    AYYLMAO(Pattern.compile("(\\w){0}+(\\s)*?a(y)++(\\s)*?")),
-    OWO(Pattern.compile("(\\w){0}+(\\s)*?(owo)(\\s)*?(\\w){0}+")),
+    AYYLMAO(Pattern.compile("\\s*ay++\\s*")),
+    OWO(Pattern.compile("(.*\\s+)*(owo)(\\s+.*)*")),
     DEFAULT();
     
     private static final Map<Pattern, Buzzword> INSTANCE_BY_BUZZWORD = new HashMap<>();
