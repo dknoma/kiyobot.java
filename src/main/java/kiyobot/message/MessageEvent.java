@@ -18,8 +18,8 @@ import kiyobot.reminders.ReminderTimeUnit;
 import kiyobot.util.BasicCommandType;
 import kiyobot.util.Buzzword;
 import kiyobot.util.MessageContentType;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+// import org.apache.logging.log4j.LogManager;
+// import org.apache.logging.log4j.Logger;
 import org.bson.Document;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.channel.Channel;
@@ -41,7 +41,7 @@ public enum MessageEvent {
 
 	INSTANCE();
     
-    private static final Logger LOGGER = LogManager.getLogger();
+    // private static final Logger LOGGER = LogManager.getLogger();
 
 	private static final Gson GSON = new Gson();
 	private static final Gson GSON_PRETTY = new GsonBuilder().disableHtmlEscaping().setPrettyPrinting().create();
@@ -265,7 +265,7 @@ public enum MessageEvent {
         final Message message = messageEvent.getMessage();
         final String text = message.getContent();
         REMINDER_MATCHER.reset(text);
-        LOGGER.debug("message = {}", text);
+        // LOGGER.debug("message = {}", text);
         
         if(REMINDER_MATCHER.matches()) {
             final String unit = REMINDER_MATCHER.group(2);
@@ -302,8 +302,8 @@ public enum MessageEvent {
                         break;
                 }
                 
-                LOGGER.debug("user: {}({}), channelId: {}, time: {}, unit: {}, message: {}",
-                            author.getDisplayName(), userId, channel.getId(), time, timeUnit, reminderMessage);
+                // LOGGER.debug("user: {}({}), channelId: {}, time: {}, unit: {}, message: {}",
+                //             author.getDisplayName(), userId, channel.getId(), time, timeUnit, reminderMessage);
                 
                 final MongoCollection<Document> collection =
                         db.getCollection(MongoCollectionType.USER_REMINDERS.collectionName());
@@ -321,7 +321,7 @@ public enum MessageEvent {
                     collection.deleteOne(doc);
                 }, time, targetUnit);
             } catch(NumberFormatException nfe) {
-                LOGGER.error(nfe.getMessage());
+                // LOGGER.error(nfe.getMessage());
             }
         }
     }

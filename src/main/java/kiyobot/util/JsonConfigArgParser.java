@@ -3,8 +3,8 @@ package kiyobot.util;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+// import org.apache.logging.log4j.LogManager;
+// import org.apache.logging.log4j.Logger;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -14,7 +14,7 @@ import java.nio.file.Paths;
 public class JsonConfigArgParser {
 
 	private static final String CONFIG_FILE = "./config/config.json";
-	private static final Logger LOGGER = LogManager.getLogger();
+	// private static final Logger LOGGER = LogManager.getLogger();
 	private static final Gson GSON = new GsonBuilder().create();
 
 	private String botStuff;
@@ -34,7 +34,7 @@ public class JsonConfigArgParser {
 		try(BufferedReader br = Files.newBufferedReader(Paths.get(CONFIG_FILE),
 				java.nio.charset.StandardCharsets.ISO_8859_1)) {
 
-			LOGGER.info(CONFIG_FILE);
+			// LOGGER.info(CONFIG_FILE);
 			parseJson(br.readLine());
 
 		} catch (IOException ioe) {

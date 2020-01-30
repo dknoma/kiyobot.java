@@ -3,8 +3,8 @@ package kiyobot.util;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+// import org.apache.logging.log4j.LogManager;
+// import org.apache.logging.log4j.Logger;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -24,7 +24,7 @@ import java.util.Map;
  */
 public class JsonPacket {
 	private static final Gson gson = new GsonBuilder().create();
-	private static final Logger LOGGER = LogManager.getLogger();
+	// private static final Logger LOGGER = LogManager.getLogger();
 
 	private final Map<String, Builder.ValueToMap> valueTypes;
 	
@@ -130,8 +130,8 @@ public class JsonPacket {
 					case BAD_TYPE:
 					default:
 						System.out.println("Unrecognized Class type. Please make sure you're adding a valid Object to the Json");
-						LOGGER.error("Unrecognized Class type for value[{}, class={}]. Please make sure you're adding a valid Object to the Json",
-								v.value, v.value.getClass());
+						// LOGGER.error("Unrecognized Class type for value[{}, class={}]. Please make sure you're adding a valid Object to the Json",
+						// 		v.value, v.value.getClass());
 						break;
 				}
 			});

@@ -1,1 +1,1 @@
-web: java -Dlog4j.configurationFile=src/main/resources/log4j2.xml -cp target/kiyobot-1.0-SNAPSHOT.jar kiyobot.bot.BasicMessageBot
+web: java -cp target/kiyobot-1.0-SNAPSHOT.jar kiyobot.bot.BasicMessageBot

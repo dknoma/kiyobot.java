@@ -3,8 +3,8 @@ package kiyobot.bot;
 import db.mongo.settings.KiyoMongoSettings;
 import kiyobot.message.MessageEvent;
 import kiyobot.util.HerokuEnv;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+// import org.apache.logging.log4j.LogManager;
+// import org.apache.logging.log4j.Logger;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.DiscordApiBuilder;
 
@@ -31,7 +31,7 @@ import org.javacord.api.DiscordApiBuilder;
  */
 public class BasicMessageBot {
 
-	private static final Logger LOGGER = LogManager.getLogger();
+	// private static final Logger LOGGER = LogManager.getLogger();
 
 	public static void main(String[] args) {
 		// Diskiyord setup

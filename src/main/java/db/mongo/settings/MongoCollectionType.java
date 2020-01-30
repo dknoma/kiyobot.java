@@ -2,8 +2,8 @@ package db.mongo.settings;
 
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+// import org.apache.logging.log4j.LogManager;
+// import org.apache.logging.log4j.Logger;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -12,7 +12,7 @@ public enum MongoCollectionType {
     USER_REMINDERS("user_reminders"),
     NULL("");
     
-    private static final Logger LOGGER = LogManager.getLogger();
+    // private static final Logger LOGGER = LogManager.getLogger();
     private static final Map<String, MongoCollectionType> COLLECTIONS_BY_NAME = new HashMap<>();
     
     static {
@@ -43,7 +43,7 @@ public enum MongoCollectionType {
                                    collection = db.getCollection(name);
                                }
                                
-                               LOGGER.info("collection: {}", collection.getNamespace().getCollectionName());
+                               // LOGGER.info("collection: {}", collection.getNamespace().getCollectionName());
                            });
     }
     

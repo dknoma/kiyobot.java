@@ -1,7 +1,7 @@
 package kiyobot.util;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+// import org.apache.logging.log4j.LogManager;
+// import org.apache.logging.log4j.Logger;
 
 /**
  * A container class that holds and object. Useful for determining of an instance of an object is present without
@@ -14,7 +14,7 @@ public class ObjectContainer<T> {
 
 	private final T object;
 	private final boolean objectIsPresent;
-	private static final Logger LOGGER = LogManager.getLogger();
+	// private static final Logger LOGGER = LogManager.getLogger();
 
 	public ObjectContainer(T object) {
 		if(object != null) {
