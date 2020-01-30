@@ -1,1 +1,1 @@
-web: java -cp target/kiyobot-1.0-SNAPSHOT.jar kiyobot.bot.BasicMessageBot
+web: java -cp target/full-kiyobot-1.0-SNAPSHOT.jar kiyobot.bot.BasicMessageBot
