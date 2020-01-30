@@ -180,7 +180,6 @@ public enum MessageEvent {
      */
     private void decodeBasicCommand(MessageCreateEvent messageEvent, String message) {
 	    final BasicCommandType commandType = BasicCommandType.getByCommandMessage(message);
-	    LOGGER.info("Logging basic command.");
 	    
 	    switch(commandType) {
             case COMMANDS:
@@ -266,10 +265,9 @@ public enum MessageEvent {
         final Message message = messageEvent.getMessage();
         final String text = message.getContent();
         REMINDER_MATCHER.reset(text);
-        LOGGER.info("message = {}", text);
+        LOGGER.debug("message = {}", text);
         
         if(REMINDER_MATCHER.matches()) {
-            LOGGER.info("matched regex");
             final String unit = REMINDER_MATCHER.group(2);
             final String reminderMessage = REMINDER_MATCHER.group(3);
             try {
@@ -304,7 +302,7 @@ public enum MessageEvent {
                         break;
                 }
                 
-                LOGGER.info("user: {}({}), channelId: {}, time: {}, unit: {}, message: {}",
+                LOGGER.debug("user: {}({}), channelId: {}, time: {}, unit: {}, message: {}",
                             author.getDisplayName(), userId, channel.getId(), time, timeUnit, reminderMessage);
                 
                 final MongoCollection<Document> collection =
