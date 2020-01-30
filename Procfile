@@ -1,1 +1,1 @@
-web: java -cp full-kiyobot-1.0.jar kiyobot.bot.BasicMessageBot
+web: java -cp ./full-kiyobot-1.0.jar kiyobot.bot.BasicMessageBot
