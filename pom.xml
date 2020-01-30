@@ -58,6 +58,50 @@
             <plugins>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <version>3.1.1</version>
+                    <executions>
+                        <execution>
+                            <id>copy</id>
+                            <phase>package</phase>
+                            <goals>
+                                <goal>copy</goal>
+                            </goals>
+                            <configuration>
+                                <artifactItems>
+                                    <artifactItem>
+                                        <groupId>[ groupId ]</groupId>
+                                        <artifactId>[ artifactId ]</artifactId>
+                                        <version>[ version ]</version>
+                                        <type>[ packaging ]</type>
+                                        <classifier> [classifier - optional] </classifier>
+                                        <overWrite>[ true or false ]</overWrite>
+                                        <outputDirectory>[ output directory ]</outputDirectory>
+                                        <destFileName>[ filename ]</destFileName>
+                                    </artifactItem>
+                                </artifactItems>
+                                <!-- other configurations here -->
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-shade-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <phase>package</phase>
+                            <goals>
+                                <goal>shade</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                    <configuration>
+                        <finalName>full-${project.artifactId}-${project.version}</finalName>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>3.8.0</version>
                 </plugin>
@@ -68,6 +112,16 @@
                 </plugin>
                 <plugin>
                     <artifactId>maven-assembly-plugin</artifactId>
+                    <version>3.2.0</version>
+                    <executions>
+                        <execution>
+                            <id>make-assembly</id> <!-- this is used for inheritance merges -->
+                            <phase>package</phase> <!-- bind to the packaging phase -->
+                            <goals>
+                                <goal>single</goal>
+                            </goals>
+                        </execution>
+                    </executions>
                     <configuration>
                         <archive>
                             <manifest>
@@ -76,6 +130,9 @@
                         </archive>
                         <descriptorRefs>
                             <descriptorRef>jar-with-dependencies</descriptorRef>
+                            <descriptorRef>bin</descriptorRef>
+                            <descriptorRef>src</descriptorRef>
+                            <descriptorRef>project</descriptorRef>
                         </descriptorRefs>
                     </configuration>
                 </plugin>
