@@ -1,8 +1,12 @@
 package kiyobot.util;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -10,8 +14,10 @@ public enum Buzzword {
     AYYLMAO(Pattern.compile("\\s*ay++\\s*")),
     OWO(Pattern.compile("(.*\\s+)*(owo)(\\s+.*)*")),
     DEFAULT();
-    
+
+    private static final Logger LOGGER = LogManager.getLogger();
     private static final Map<Pattern, Buzzword> INSTANCE_BY_BUZZWORD = new HashMap<>();
+    private static final Matcher matcher = Pattern.compile("").matcher("").reset();
     
     static {
         Arrays.asList(Buzzword.values())
@@ -33,30 +39,28 @@ public enum Buzzword {
     }
     
     public static Buzzword getByFirstMatch(String message) {
-        Buzzword instance = DEFAULT;
-        final String[] parts = message.split("\\s++");
-        for(String word : parts) {
-            instance = foundBuzzword(word);
-            if(instance != DEFAULT) {
-                break;
-            }
-        }
-        return instance;
+        return foundBuzzword(message);
     }
     
     private static Buzzword foundBuzzword(String message) {
-        Buzzword instance = DEFAULT;
-        for(Buzzword buzzword : Buzzword.values()) {
-            if(buzzword.hasMatch(message)) {
-                instance = buzzword;
-                break;
-            }
-        }
-        return instance;
+        final AtomicReference<Boolean> stop = new AtomicReference<>(false);
+        final AtomicReference<Buzzword> instance = new AtomicReference<>(DEFAULT);
+        Arrays.stream(Buzzword.values())
+              .filter(buzzword -> buzzword != DEFAULT)
+              .forEach(buzzword -> {
+                  LOGGER.info("buzzword={}", buzzword.name());
+
+                  if(!stop.get() && buzzword.hasMatch(message)) {
+                      instance.set(buzzword);
+                      stop.set(true);
+                  }
+              });
+        return instance.get();
     }
     
-    public boolean hasMatch(String message) {
-        final Matcher matcher = this.buzzwordPattern.matcher(message.toLowerCase());
-        return matcher.find();
+    private boolean hasMatch(String message) {
+        LOGGER.info("message={}", message);
+        final Matcher match = matcher.usePattern(this.buzzwordPattern).reset(message.toLowerCase());
+        return match.matches();
     }
 }

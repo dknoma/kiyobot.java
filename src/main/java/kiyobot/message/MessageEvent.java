@@ -18,8 +18,8 @@ import kiyobot.reminders.ReminderTimeUnit;
 import kiyobot.util.BasicCommandType;
 import kiyobot.util.Buzzword;
 import kiyobot.util.MessageContentType;
-// import org.apache.logging.log4j.LogManager;
-// import org.apache.logging.log4j.Logger;
+ import org.apache.logging.log4j.LogManager;
+ import org.apache.logging.log4j.Logger;
 import org.bson.Document;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.channel.Channel;
@@ -41,14 +41,14 @@ public enum MessageEvent {
 
 	INSTANCE();
     
-    // private static final Logger LOGGER = LogManager.getLogger();
+	private static final Logger LOGGER = LogManager.getLogger();
 
 	private static final Gson GSON = new Gson();
 	private static final Gson GSON_PRETTY = new GsonBuilder().disableHtmlEscaping().setPrettyPrinting().create();
 	
 	private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(100);
 	
-	private static final Pattern REMINDER_REGEX = Pattern.compile("!remindme ([0-9])+ (s|m|h|d|w|mon) ?(.*)");
+	private static final Pattern REMINDER_REGEX = Pattern.compile("!remindme (\\d+) (s|m|h|d|w|mon) ?(.*)");
 	private static final Matcher REMINDER_MATCHER = REMINDER_REGEX.matcher("").reset();
 	
 	private static final String SUGGESTION_LINK = "https://forms.gle/Y6pKqMAgYUS6eJJL7";
@@ -275,6 +275,7 @@ public enum MessageEvent {
                 final long userId = author.getId();
 
                 long time = Long.parseLong(REMINDER_MATCHER.group(1));
+                LOGGER.info("time={}", time);
                 final ReminderTimeUnit timeUnit = ReminderTimeUnit.getUnit(unit);
     
                 final long targetTime;
