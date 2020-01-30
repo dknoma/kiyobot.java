@@ -1,1 +1,1 @@
-web: $JAVA_OPTS -Dserver.port=$PORT java -cp ./full-kiyobot-1.0.jar kiyobot.bot.BasicMessageBot
+web: java $JAVA_OPTS -Dserver.port=$PORT -cp ./full-kiyobot-1.0.jar kiyobot.bot.BasicMessageBot
