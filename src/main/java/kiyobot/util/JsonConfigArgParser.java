@@ -19,6 +19,8 @@ public class JsonConfigArgParser {
 
 	private String botStuff;
 	private String authTok;
+	private String mongoUser;
+	private String mongoPass;
 
 	public JsonConfigArgParser() {
 		this.botStuff = "";
@@ -52,6 +54,12 @@ public class JsonConfigArgParser {
 		if(obj.has("botStuff")) {
 			this.botStuff = obj.get("botStuff").getAsString();
 		}
+		if(obj.has("mongoUser")) {
+			this.mongoUser = obj.get("mongoUser").getAsString();
+		}
+		if(obj.has("mongoPass")) {
+			this.mongoPass = obj.get("mongoPass").getAsString();
+		}
 	}
 
 	/**
@@ -68,5 +76,21 @@ public class JsonConfigArgParser {
 	 */
 	public String getBotStuff() {
 		return  this.botStuff;
+	}
+
+	/**
+	 * Get mongo user
+	 * @return mongoUser
+	 */
+	public String getMongoUser() {
+		return  this.mongoUser;
+	}
+
+	/**
+	 * Get mongo pass
+	 * @return mongoPass
+	 */
+	public String getMongoPass() {
+		return  this.mongoPass;
 	}
 }

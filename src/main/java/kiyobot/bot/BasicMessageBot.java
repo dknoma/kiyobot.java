@@ -1,5 +1,6 @@
 package kiyobot.bot;
 
+import db.mongo.settings.KiyoMongoSettings;
 import jql.sql.jdbc.JDBCEnum;
 import jql.sql.jdbc.JDBCHandler;
 import jql.sql.jdbc.PostgresHandler;
@@ -73,13 +74,15 @@ public class BasicMessageBot {
 //		}
 
 		// Diskiyord setup
-		JsonConfigArgParser parser = new JsonConfigArgParser();
+		final JsonConfigArgParser parser = new JsonConfigArgParser();
 		parser.parseConfig();
+		
+		final KiyoMongoSettings settings = new KiyoMongoSettings(parser.getMongoUser(), parser.getMongoPass());
 		// Used if need to have bot output to this specific channel
 //		String botStuffChannelId = parser.getBotStuff();
-		DiscordApi api = new DiscordApiBuilder().setToken(parser.getAuthTok()).login().join();
+		final DiscordApi api = new DiscordApiBuilder().setToken(parser.getAuthTok()).login().join();
 		// Adds a message listener
 		MessageEvent messageEvent = MessageEvent.INSTANCE;
-		messageEvent.listenOnMessage(api);
+		messageEvent.listenOnMessage(api, settings);
 	}
 }
