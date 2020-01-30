@@ -340,7 +340,7 @@ public enum MessageEvent {
     
     private static void getBasicCommandList(StringBuilder builder) {
         builder.append("**Basic Bot Commands**\n");
-        builder.append("```");
+        builder.append("```java\n");
         Arrays.stream(BasicCommandType.values())
               .filter(type -> type != BasicCommandType.DEFAULT)
               .forEach(commandType -> {
