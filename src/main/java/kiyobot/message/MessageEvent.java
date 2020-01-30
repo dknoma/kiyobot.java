@@ -344,7 +344,7 @@ public enum MessageEvent {
         Arrays.stream(BasicCommandType.values())
               .filter(type -> type != BasicCommandType.DEFAULT)
               .forEach(commandType -> {
-                  builder.append(String.format("----------------\n%s\n----------------\n + %s\n",
+                  builder.append(String.format("----------------\n%s\n----------------\n + %s\n\n",
                                                commandType.getCommand(),
                                                commandType.getDescription()));
               });
