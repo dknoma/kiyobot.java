@@ -17,14 +17,12 @@ public class UserReminderDocument implements KiyobotDocument {
         this.document = new Document();
     }
 
+    public void putAll(long authorId, long channelId, long time, String timeUnit, String reminderMessage, long targetTime) {
+        putData(authorId, channelId, time, timeUnit, reminderMessage, targetTime);
+    }
+
     @Override
     public void putData(Object... data) {
-        // document.put(AUTHOR_ID_KEY, userId);
-        // document.put(CHANNEL_ID_KEY, channel.getId());
-        // document.put(TIME_KEY, time);
-        // document.put(TIME_UNIT_KEY, timeUnit.suffix());
-        // document.put(REMINDER_MESSAGE_KEY, reminderMessage);
-        // document.put(TARGET_TIME_KEY, targetTime);
         document.put(AUTHOR_ID_KEY, data[0]);
         document.put(CHANNEL_ID_KEY, data[1]);
         document.put(TIME_KEY, data[2]);

@@ -8,6 +8,7 @@ public enum BasicCommandType {
     COMMANDS("!commands", "List of useful commands."),
     CELTX("!celtx", "Provides a link to the celtx docs."),
     DOC("!doc", "Provides a link to the project docs."),
+    GITHUB("!github", "Provides a link to the Github repository for the project."),
     HELP("!help", "List of useful commands."),
     HEWWO("!hewwo", "What's dis?"),
     PING("!ping", "Pong!"),
@@ -19,7 +20,7 @@ public enum BasicCommandType {
     
     static {
         Arrays.asList(BasicCommandType.values())
-                .forEach(instance -> INSTANCE_BY_COMMAND.put(instance.getCommand(), instance));
+              .forEach(instance -> INSTANCE_BY_COMMAND.put(instance.getCommand(), instance));
     }
     
     private final String command;

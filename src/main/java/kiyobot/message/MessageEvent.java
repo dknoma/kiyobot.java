@@ -28,10 +28,12 @@ import org.javacord.api.entity.channel.ServerChannel;
 import org.javacord.api.entity.channel.TextChannel;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.MessageAuthor;
+import org.javacord.api.entity.server.Server;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.event.server.ServerJoinEvent;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -57,6 +59,7 @@ public enum MessageEvent {
 	private static final String SUGGESTION_LINK = "https://forms.gle/Y6pKqMAgYUS6eJJL7";
 	private static final String DOC_LINK_VIEW_ONLY = "https://docs.google.com/document/d/1gmVzkkEiOadXF6ThIalBqzCuuyrGVs2ZGUzqcGeQZyE/edit?usp=sharing";
 	private static final String CELTX_LINK = "https://www.celtx.com/a/ux/#documents";
+	private static final String GITHUB_LINK = "https://github.com/dknoma/Calytrix";
 	
 	private static final String COMMAND_LIST;
     
@@ -81,11 +84,17 @@ public enum MessageEvent {
 	 */
 	public void listenOnMessage(DiscordApi api, KiyoMongoSettings settings) {
         this.db = settings.getDatabase();
-		api.addMessageCreateListener(this::onMessage);
-		api.addServerJoinListener(this::getReminders);
+        final Collection<Server> servers = api.getServers();
+        onStartBot(servers);
+
+        api.addMessageCreateListener(this::onMessage);
 	}
+
+	private void onStartBot(Collection<Server> servers) {
+        servers.forEach(this::getReminders);
+    }
  
-	private void getReminders(ServerJoinEvent joinEvent) {
+	private void getReminders(Server server) {
         final MongoCollection<Document> collection =
                 db.getCollection(MongoCollectionType.USER_REMINDERS.collectionName());
         
@@ -94,20 +103,21 @@ public enum MessageEvent {
         
         while(cursor.hasNext()) {
             final Document doc = cursor.next();
-            final long authorId = doc.getLong(AUTHOR_ID_KEY);
             final long channelId = doc.getLong(CHANNEL_ID_KEY);
-            final long time = doc.getLong(TIME_KEY);
-            final long targetTime = doc.getLong(TARGET_TIME_KEY);
-            final ReminderTimeUnit unit = ReminderTimeUnit.getUnit(doc.getString(TIME_UNIT_KEY));
-            final String reminderMessage = doc.getString(REMINDER_MESSAGE_KEY);
-    
-            final Optional<ServerChannel> channelById = joinEvent.getServer().getChannelById(channelId);
-    
-            final long currentMillis = System.currentTimeMillis();
-            
-            final long convert;
-            final TimeUnit timeUnit;
-            switch(unit) {
+            final Optional<ServerChannel> channel;
+
+            if((channel = server.getChannelById(channelId)).isPresent()) {
+                final long authorId = doc.getLong(AUTHOR_ID_KEY);
+                final long time = doc.getLong(TIME_KEY);
+                final long targetTime = doc.getLong(TARGET_TIME_KEY);
+                final ReminderTimeUnit unit = ReminderTimeUnit.getUnit(doc.getString(TIME_UNIT_KEY));
+                final String reminderMessage = doc.getString(REMINDER_MESSAGE_KEY);
+
+                final long currentMillis = System.currentTimeMillis();
+
+                final long convert;
+                final TimeUnit timeUnit;
+                switch(unit) {
                 case SECONDS:
                     convert = currentMillis / 1000 - targetTime;
                     timeUnit = TimeUnit.SECONDS;
@@ -128,12 +138,13 @@ public enum MessageEvent {
                     convert = 0;
                     timeUnit = TimeUnit.SECONDS;
                     break;
+                }
+
+                scheduleReminder(() -> {
+                    channel.flatMap(Channel::asTextChannel).get().sendMessage(String.format("<@%s> - %s", authorId, reminderMessage));
+                    collection.deleteOne(doc);
+                }, convert > 0 ? convert : 0, timeUnit);
             }
-    
-            scheduleReminder(() -> {
-                channelById.flatMap(Channel::asTextChannel).get().sendMessage(String.format("<@%s> - %s", authorId, reminderMessage));
-                collection.deleteOne(doc);
-            }, convert > 0 ? convert : 0, timeUnit);
         }
     }
 	
@@ -207,6 +218,9 @@ public enum MessageEvent {
                 break;
             case REMIND_ME:
                 doEncodeReminder(messageEvent);
+                break;
+            case GITHUB:
+                doEncodeGithub(messageEvent);
                 break;
             case DEFAULT:
                 doEncodeUnknownCommand(messageEvent);
@@ -312,16 +326,11 @@ public enum MessageEvent {
                 
                 final MongoCollection<Document> collection =
                         db.getCollection(MongoCollectionType.USER_REMINDERS.collectionName());
+
                 UserReminderDocument document = new UserReminderDocument();
-                document.putData(userId, channel.getId(), time, timeUnit.suffix(), reminderMessage, targetTime);
-                // Document doc = new Document();
-                // doc.put(AUTHOR_ID_KEY, userId);
-                // doc.put(CHANNEL_ID_KEY, channel.getId());
-                // doc.put(TIME_KEY, time);
-                // doc.put(TIME_UNIT_KEY, timeUnit.suffix());
-                // doc.put(REMINDER_MESSAGE_KEY, reminderMessage);
-                // doc.put(TARGET_TIME_KEY, targetTime);
+                document.putAll(userId, channel.getId(), time, timeUnit.suffix(), reminderMessage, targetTime);
                 Document doc = document.getDocument();
+
                 collection.insertOne(doc);
     
                 scheduleReminder(() -> {
@@ -336,6 +345,10 @@ public enum MessageEvent {
     
     private static void scheduleReminder(Runnable run, long time, TimeUnit timeUnit) {
         final ScheduledFuture<?> future = scheduler.schedule(run, time, timeUnit);
+    }
+
+    private void doEncodeGithub(MessageCreateEvent messageEvent) {
+        messageEvent.getChannel().sendMessage(GITHUB_LINK);
     }
     
     private void doEncodeUnknownCommand(MessageCreateEvent messageEvent) {
