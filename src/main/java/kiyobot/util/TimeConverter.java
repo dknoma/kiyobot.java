@@ -2,11 +2,8 @@ package kiyobot.util;
 
 import java.util.concurrent.TimeUnit;
 
-import kiyobot.reminders.ReminderTimeUnit;
-
 public final class TimeConverter {
-
-    public static long fromMillis(long time, ReminderTimeUnit timeUnit) {
+    public static long fromMillis(long time, TimeUnit timeUnit) {
         long result;
         switch (timeUnit) {
             case SECONDS:

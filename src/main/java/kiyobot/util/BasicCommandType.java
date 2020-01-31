@@ -13,7 +13,7 @@ public enum BasicCommandType {
     HEWWO("!hewwo", "What's dis?"),
     PING("!ping", "Pong!"),
     SUGGESTION("!suggestion", "Provides a link to a Google Forms to create suggestions for me!"),
-    REMIND_ME("!remindme", "Gives me a message to remind and ping you after a certain amount of time.\n + Format: !remindme <number> <unit: valid units=[s, m, h, d]> <message>"),
+    REMIND_ME("!remindme", "Gives me a message to remind and ping you after a certain amount of time.\n + Format: !remindme <number> <unit> <message>"),
     DEFAULT();
     
     private static final Map<String, BasicCommandType> INSTANCE_BY_COMMAND = new HashMap<>();

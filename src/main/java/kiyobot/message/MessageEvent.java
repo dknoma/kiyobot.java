@@ -10,10 +10,6 @@ import static kiyobot.reminders.ReminderSuffixType.CHAR;
 import static kiyobot.reminders.ReminderSuffixType.FULL;
 import static kiyobot.reminders.ReminderSuffixType.NULL;
 import static kiyobot.reminders.ReminderSuffixType.PARTIAL;
-import static kiyobot.util.TimeConverter.daysToMilli;
-import static kiyobot.util.TimeConverter.hoursToMilli;
-import static kiyobot.util.TimeConverter.minutesToMilli;
-import static kiyobot.util.TimeConverter.secondsToMilli;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -134,25 +130,7 @@ public enum MessageEvent {
 
                 final long currentMillis = System.currentTimeMillis();
                 final long deltaTime = targetTime - currentMillis;
-
-                final TimeUnit timeUnit;
-                switch(unit) {
-                    case SECONDS:
-                        timeUnit = TimeUnit.SECONDS;
-                        break;
-                    case MINUTES:
-                        timeUnit = TimeUnit.MINUTES;
-                        break;
-                    case HOURS:
-                        timeUnit = TimeUnit.HOURS;
-                        break;
-                    case DAYS:
-                        timeUnit = TimeUnit.DAYS;
-                        break;
-                    default:
-                        timeUnit = TimeUnit.MILLISECONDS;
-                        break;
-                }
+                final TimeUnit timeUnit = unit.toTimeUnit();
 
                 scheduleReminder(() -> {
                     channel.flatMap(Channel::asTextChannel).get().sendMessage(String.format("<@%s> - %s", authorId, reminderMessage));
@@ -322,12 +300,11 @@ public enum MessageEvent {
                 final MessageAuthor author = message.getAuthor();
                 final long userId = author.getId();
 
-                long time = Long.parseLong(matcher.group("time"));
-//                LOGGER.info("time={}", time);
+                final long time = Long.parseLong(matcher.group("time"));
                 final ReminderTimeUnit timeUnit = ReminderTimeUnit.getUnit(unit);
 
-                final long targetTime = TimeConverter.fromMillis(time, timeUnit) + System.currentTimeMillis();
                 final TimeUnit targetUnit = timeUnit.toTimeUnit();
+                final long targetTime = TimeConverter.fromMillis(time, targetUnit) + System.currentTimeMillis();
                 
                 // LOGGER.debug("user: {}({}), channelId: {}, time: {}, unit: {}, message: {}",
                 //             author.getDisplayName(), userId, channel.getId(), time, timeUnit, reminderMessage);
@@ -336,7 +313,7 @@ public enum MessageEvent {
                         db.getCollection(MongoCollectionType.USER_REMINDERS.collectionName());
 
                 UserReminderDocument document = new UserReminderDocument();
-                document.putAll(userId, channel.getId(), time, timeUnit.suffix(), reminderMessage, targetTime);
+                document.putAll(userId, channel.getId(), time, unit, reminderMessage, targetTime);
                 Document doc = document.getDocument();
 
                 collection.insertOne(doc);
