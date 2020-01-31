@@ -12,10 +12,6 @@ import static kiyobot.reminders.ReminderSuffixType.NULL;
 import static kiyobot.reminders.ReminderSuffixType.PARTIAL;
 import static kiyobot.util.TimeConverter.daysToMilli;
 import static kiyobot.util.TimeConverter.hoursToMilli;
-import static kiyobot.util.TimeConverter.milliToDays;
-import static kiyobot.util.TimeConverter.milliToHours;
-import static kiyobot.util.TimeConverter.milliToMinutes;
-import static kiyobot.util.TimeConverter.milliToSeconds;
 import static kiyobot.util.TimeConverter.minutesToMilli;
 import static kiyobot.util.TimeConverter.secondsToMilli;
 
@@ -45,7 +41,6 @@ import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.MessageAuthor;
 import org.javacord.api.entity.server.Server;
 import org.javacord.api.event.message.MessageCreateEvent;
-import org.javacord.api.event.server.ServerJoinEvent;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -138,36 +133,31 @@ public enum MessageEvent {
                 final String reminderMessage = doc.getString(REMINDER_MESSAGE_KEY);
 
                 final long currentMillis = System.currentTimeMillis();
+                final long deltaTime = targetTime - currentMillis;
 
-                final long convert;
                 final TimeUnit timeUnit;
                 switch(unit) {
-                case SECONDS:
-                    convert = secondsToMilli(currentMillis) - targetTime;
-                    timeUnit = TimeUnit.SECONDS;
-                    break;
-                case MINUTES:
-                    convert = minutesToMilli(currentMillis) - targetTime;
-                    timeUnit = TimeUnit.MINUTES;
-                    break;
-                case HOURS:
-                    convert = hoursToMilli(currentMillis) - targetTime;
-                    timeUnit = TimeUnit.HOURS;
-                    break;
-                case DAYS:
-                    convert = daysToMilli(currentMillis) - targetTime;
-                    timeUnit = TimeUnit.DAYS;
-                    break;
-                default:
-                    convert = 0;
-                    timeUnit = TimeUnit.SECONDS;
-                    break;
-                }
+                    case SECONDS:
+                        timeUnit = TimeUnit.SECONDS;
+                        break;
+                    case MINUTES:
+                        timeUnit = TimeUnit.MINUTES;
+                        break;
+                    case HOURS:
+                        timeUnit = TimeUnit.HOURS;
+                        break;
+                    case DAYS:
+                        timeUnit = TimeUnit.DAYS;
+                        break;
+                    default:
+                        timeUnit = TimeUnit.MILLISECONDS;
+                        break;
+                    }
 
                 scheduleReminder(() -> {
                     channel.flatMap(Channel::asTextChannel).get().sendMessage(String.format("<@%s> - %s", authorId, reminderMessage));
                     collection.deleteOne(doc);
-                }, convert > 0 ? convert : 0, timeUnit);
+                }, deltaTime > 0 ? deltaTime : 0, timeUnit);
             }
         }
     }
