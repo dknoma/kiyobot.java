@@ -336,7 +336,7 @@ public enum MessageEvent {
 //                LOGGER.info("time={}", time);
                 final ReminderTimeUnit timeUnit = ReminderTimeUnit.getUnit(unit);
 
-                final long targetTime = TimeConverter.fromMillis(time, timeUnit);
+                final long targetTime = TimeConverter.fromMillis(time, timeUnit) + System.currentTimeMillis();
                 final TimeUnit targetUnit = timeUnit.toTimeUnit();
                 
                 // LOGGER.debug("user: {}({}), channelId: {}, time: {}, unit: {}, message: {}",
