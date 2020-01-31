@@ -358,6 +358,8 @@ public enum MessageEvent {
             } catch(NumberFormatException nfe) {
                 // LOGGER.error(nfe.getMessage());
             }
+        } else {
+            channel.sendMessage(String.format("Command \"%s\" not recognized. Valid format: !remindme <time> <unit> <reminder message>", text));
         }
     }
     
