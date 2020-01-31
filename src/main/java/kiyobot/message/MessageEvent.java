@@ -336,30 +336,8 @@ public enum MessageEvent {
 //                LOGGER.info("time={}", time);
                 final ReminderTimeUnit timeUnit = ReminderTimeUnit.getUnit(unit);
 
-                final long targetTime;
-                final TimeUnit targetUnit;
-                switch (timeUnit) {
-                    case SECONDS:
-                        targetTime = milliToSeconds(time) + System.currentTimeMillis();
-                        targetUnit = TimeUnit.SECONDS;
-                        break;
-                    case MINUTES:
-                        targetTime = milliToMinutes(time) + System.currentTimeMillis();
-                        targetUnit = TimeUnit.MINUTES;
-                        break;
-                    case HOURS:
-                        targetTime = milliToHours(time) + System.currentTimeMillis();
-                        targetUnit = TimeUnit.HOURS;
-                        break;
-                    case DAYS:
-                        targetTime = milliToDays(time) + System.currentTimeMillis();
-                        targetUnit = TimeUnit.DAYS;
-                        break;
-                    default:
-                        targetTime = 0;
-                        targetUnit = TimeUnit.MILLISECONDS;
-                        break;
-                }
+                final long targetTime = TimeConverter.fromMillis(time, timeUnit);
+                final TimeUnit targetUnit = timeUnit.toTimeUnit();
                 
                 // LOGGER.debug("user: {}({}), channelId: {}, time: {}, unit: {}, message: {}",
                 //             author.getDisplayName(), userId, channel.getId(), time, timeUnit, reminderMessage);

@@ -1,8 +1,10 @@
 package kiyobot.reminders;
 
+import java.sql.Time;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 public enum ReminderTimeUnit {
     SECONDS("s", "sec", "seconds"),
@@ -36,7 +38,28 @@ public enum ReminderTimeUnit {
     public String suffix() {
         return unitChar;
     }
-    
+
+    public TimeUnit toTimeUnit() {
+        final TimeUnit unit;
+        switch(this) {
+            case SECONDS:
+                unit = TimeUnit.SECONDS;
+                break;
+            case MINUTES:
+                unit = TimeUnit.MINUTES;
+                break;
+            case HOURS:
+                unit = TimeUnit.HOURS;
+                break;
+            case DAYS:
+                unit = TimeUnit.DAYS;
+                break;
+            default:
+                unit = TimeUnit.MILLISECONDS;
+        }
+        return unit;
+    }
+
     public static ReminderTimeUnit getUnit(String unit) {
         final ReminderTimeUnit timeUnit;
         final int len = unit.length();

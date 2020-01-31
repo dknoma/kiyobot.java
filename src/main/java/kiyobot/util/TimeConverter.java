@@ -1,6 +1,32 @@
 package kiyobot.util;
 
+import java.util.concurrent.TimeUnit;
+
+import kiyobot.reminders.ReminderTimeUnit;
+
 public final class TimeConverter {
+
+    public static long fromMillis(long time, ReminderTimeUnit timeUnit) {
+        long result;
+        switch (timeUnit) {
+            case SECONDS:
+                result = milliToSeconds(time);
+                break;
+            case MINUTES:
+                result = milliToMinutes(time);
+                break;
+            case HOURS:
+                result = milliToHours(time);
+                break;
+            case DAYS:
+                result = milliToDays(time);
+                break;
+            default:
+                result = 0;
+                break;
+        }
+        return result;
+    }
 
     public static long milliToSeconds(long milli) {
         return milli * 1000;
