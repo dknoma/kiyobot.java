@@ -6,6 +6,19 @@ import static db.mongo.documents.util.DocumentConstants.UserReminderDocumentKeys
 import static db.mongo.documents.util.DocumentConstants.UserReminderDocumentKeys.TARGET_TIME_KEY;
 import static db.mongo.documents.util.DocumentConstants.UserReminderDocumentKeys.TIME_KEY;
 import static db.mongo.documents.util.DocumentConstants.UserReminderDocumentKeys.TIME_UNIT_KEY;
+import static kiyobot.reminders.ReminderSuffixType.CHAR;
+import static kiyobot.reminders.ReminderSuffixType.FULL;
+import static kiyobot.reminders.ReminderSuffixType.NULL;
+import static kiyobot.reminders.ReminderSuffixType.PARTIAL;
+import static kiyobot.util.TimeConverter.daysToMilli;
+import static kiyobot.util.TimeConverter.hoursToMilli;
+import static kiyobot.util.TimeConverter.milliToDays;
+import static kiyobot.util.TimeConverter.milliToHours;
+import static kiyobot.util.TimeConverter.milliToMinutes;
+import static kiyobot.util.TimeConverter.milliToSeconds;
+import static kiyobot.util.TimeConverter.minutesToMilli;
+import static kiyobot.util.TimeConverter.secondsToMilli;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.mongodb.client.FindIterable;
@@ -15,10 +28,12 @@ import com.mongodb.client.MongoDatabase;
 import db.mongo.documents.UserReminderDocument;
 import db.mongo.settings.KiyoMongoSettings;
 import db.mongo.settings.MongoCollectionType;
+import kiyobot.reminders.ReminderSuffixType;
 import kiyobot.reminders.ReminderTimeUnit;
 import kiyobot.util.BasicCommandType;
 import kiyobot.util.Buzzword;
 import kiyobot.util.MessageContentType;
+import kiyobot.util.TimeConverter;
 //import org.apache.logging.log4j.LogManager;
 //import org.apache.logging.log4j.Logger;
 import org.bson.Document;
@@ -52,10 +67,17 @@ public enum MessageEvent {
 	private static final Gson GSON_PRETTY = new GsonBuilder().disableHtmlEscaping().setPrettyPrinting().create();
 	
 	private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(100);
-	
-	private static final Pattern REMINDER_REGEX = Pattern.compile("!remindme (?<time>\\d+) (((?<charSuffix>[smhd]) )|((?<partialSuffix>sec|min|hr|day) )|((?<fullSuffix>second|minute|hour) ))(?<msg>.*)");
-	private static final Matcher REMINDER_MATCHER = REMINDER_REGEX.matcher("").reset();
-	
+
+    private static final Pattern REMINDER_FULL_SUFFIX_REGEX = Pattern.compile("!remindme (?<time>\\d+) (?<suffix>second|minute|hour) +(?<msg>.*)");
+    private static final Pattern REMINDER_PARTIAL_SUFFIX_REGEX = Pattern.compile("!remindme (?<time>\\d+) (?<suffix>sec|min|hr|day) +(?<msg>.*)");
+    private static final Pattern REMINDER_CHAR_SUFFIX_REGEX = Pattern.compile("!remindme (?<time>\\d+) (?<suffix>[smhd]) +(?<msg>.*)");
+    private static final Matcher REMINDER_FULL_MATCHER = REMINDER_FULL_SUFFIX_REGEX.matcher("").reset();
+    private static final Matcher REMINDER_PARTIAL_MATCHER = REMINDER_PARTIAL_SUFFIX_REGEX.matcher("").reset();
+    private static final Matcher REMINDER_CHAR_MATCHER = REMINDER_CHAR_SUFFIX_REGEX.matcher("").reset();
+
+	// private static final Pattern REMINDER_REGEX = Pattern.compile("!remindme (?<time>\\d+) (((?<charSuffix>[smhd]) )|((?<partialSuffix>sec|min|hr|day) )|((?<fullSuffix>second|minute|hour) ))(?<msg>.*)");
+	// private static final Matcher REMINDER_MATCHER = REMINDER_REGEX.matcher("").reset();
+
 	private static final String SUGGESTION_LINK = "https://forms.gle/Y6pKqMAgYUS6eJJL7";
 	private static final String DOC_LINK_VIEW_ONLY = "https://docs.google.com/document/d/1gmVzkkEiOadXF6ThIalBqzCuuyrGVs2ZGUzqcGeQZyE/edit?usp=sharing";
 	private static final String CELTX_LINK = "https://www.celtx.com/a/ux/#documents";
@@ -69,7 +91,9 @@ public enum MessageEvent {
         
         COMMAND_LIST = builder.toString();
     }
-    
+
+    private Matcher matcher;
+
     private int PINGS;
     private ScheduledFuture pingExpiration;
     
@@ -119,19 +143,19 @@ public enum MessageEvent {
                 final TimeUnit timeUnit;
                 switch(unit) {
                 case SECONDS:
-                    convert = currentMillis / 1000 - targetTime;
+                    convert = secondsToMilli(currentMillis) - targetTime;
                     timeUnit = TimeUnit.SECONDS;
                     break;
                 case MINUTES:
-                    convert = currentMillis / 1000 / 60 - targetTime;
+                    convert = minutesToMilli(currentMillis) - targetTime;
                     timeUnit = TimeUnit.MINUTES;
                     break;
                 case HOURS:
-                    convert = currentMillis / 1000 / 60 / 60 - targetTime;
+                    convert = hoursToMilli(currentMillis) - targetTime;
                     timeUnit = TimeUnit.HOURS;
                     break;
                 case DAYS:
-                    convert = currentMillis / 1000 / 60 / 60 / 24 - targetTime;
+                    convert = daysToMilli(currentMillis) - targetTime;
                     timeUnit = TimeUnit.DAYS;
                     break;
                 default:
@@ -282,46 +306,53 @@ public enum MessageEvent {
         final TextChannel channel = messageEvent.getChannel();
         final Message message = messageEvent.getMessage();
         final String text = message.getContent();
-        REMINDER_MATCHER.reset(text);
-        // LOGGER.debug("message = {}", text);
-        
-        if(REMINDER_MATCHER.matches()) {
-            final String fullSuffix = REMINDER_MATCHER.group("fullSuffix");
-            final String partialSuffix = REMINDER_MATCHER.group("partialSuffix");
-            final String charSuffix = REMINDER_MATCHER.group("charSuffix");
+        REMINDER_FULL_MATCHER.reset(text);
+        REMINDER_PARTIAL_MATCHER.reset(text);
+        REMINDER_CHAR_MATCHER.reset(text);
 
-            final String unit = fullSuffix != null ? fullSuffix :
-                                partialSuffix != null ? partialSuffix :
-                                charSuffix != null ? charSuffix : "s";
-            // final String unit = REMINDER_MATCHER.group(2);
+        final ReminderSuffixType type;
+        if(REMINDER_FULL_MATCHER.matches()) {
+            this.matcher = REMINDER_FULL_MATCHER;
+            type = FULL;
+        } else if(REMINDER_PARTIAL_MATCHER.matches()) {
+            this.matcher = REMINDER_PARTIAL_MATCHER;
+            type = PARTIAL;
+        } else if(REMINDER_CHAR_MATCHER.matches()) {
+            this.matcher = REMINDER_CHAR_MATCHER;
+            type = CHAR;
+        } else {
+            type = NULL;
+        }
 
-            final String reminderMessage = REMINDER_MATCHER.group("msg");
+        if(type != NULL) {
+            final String unit = matcher.group("suffix");
+            final String reminderMessage = matcher.group("msg");
 
             try {
                 final MessageAuthor author = message.getAuthor();
                 final long userId = author.getId();
 
-                long time = Long.parseLong(REMINDER_MATCHER.group("time"));
+                long time = Long.parseLong(matcher.group("time"));
 //                LOGGER.info("time={}", time);
                 final ReminderTimeUnit timeUnit = ReminderTimeUnit.getUnit(unit);
-    
+
                 final long targetTime;
                 final TimeUnit targetUnit;
                 switch (timeUnit) {
                     case SECONDS:
-                        targetTime = time * 1000 + System.currentTimeMillis();
+                        targetTime = milliToSeconds(time) + System.currentTimeMillis();
                         targetUnit = TimeUnit.SECONDS;
                         break;
                     case MINUTES:
-                        targetTime = time * 1000 * 60 + System.currentTimeMillis();
+                        targetTime = milliToMinutes(time) + System.currentTimeMillis();
                         targetUnit = TimeUnit.MINUTES;
                         break;
                     case HOURS:
-                        targetTime = time * 1000 * 60 * 60 + System.currentTimeMillis();
+                        targetTime = milliToHours(time) + System.currentTimeMillis();
                         targetUnit = TimeUnit.HOURS;
                         break;
                     case DAYS:
-                        targetTime = time * 1000 * 60 * 60 * 24 + System.currentTimeMillis();
+                        targetTime = milliToDays(time) + System.currentTimeMillis();
                         targetUnit = TimeUnit.DAYS;
                         break;
                     default:

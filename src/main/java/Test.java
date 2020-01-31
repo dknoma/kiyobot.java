@@ -7,10 +7,11 @@ public class Test {
 	private static final Matcher REMINDER_MATCHER = REMINDER_REGEX.matcher("").reset();
 	
 	public static void main(String[] args) {
-		REMINDER_MATCHER.reset("!remindme 1 d henlo person there");
-		REMINDER_MATCHER.matches();
-		
-		System.out.println(REMINDER_MATCHER.group(3));
+		System.out.println(String.valueOf(1));
+		// REMINDER_MATCHER.reset("!remindme 1 d henlo person there");
+		// REMINDER_MATCHER.matches();
+		//
+		// System.out.println(REMINDER_MATCHER.group(3));
 // 		String addExgfxRegex = "!addexgfx (\\p{XDigit}+?) (\".*\") (\".+\") (\\w+?) (.+)";
 // 		String getExgfxRegex = "!getexgfx (\\p{XDigit}+?)";
 // 		String getAllExgfxRegex = "!getallexgfx";
