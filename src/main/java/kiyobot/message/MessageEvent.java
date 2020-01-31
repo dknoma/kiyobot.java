@@ -53,7 +53,7 @@ public enum MessageEvent {
 	
 	private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(100);
 	
-	private static final Pattern REMINDER_REGEX = Pattern.compile("!remindme (\\d+) ((?<fullSuffix>second|minute|hour) |(?<partialSuffix>sec|min|hr|day) |(?<charSuffix>[smhd] )) ?(?<msg>.*)");
+	private static final Pattern REMINDER_REGEX = Pattern.compile("!remindme (?<time>\\d+) ((?<fullSuffix>second|minute|hour) |(?<partialSuffix>sec|min|hr|day) |(?<charSuffix>[smhd]) )(?<msg>.*)");
 	private static final Matcher REMINDER_MATCHER = REMINDER_REGEX.matcher("").reset();
 	
 	private static final String SUGGESTION_LINK = "https://forms.gle/Y6pKqMAgYUS6eJJL7";
@@ -286,21 +286,21 @@ public enum MessageEvent {
         // LOGGER.debug("message = {}", text);
         
         if(REMINDER_MATCHER.matches()) {
-            // final String fullSuffix = REMINDER_MATCHER.group("fullSuffix");
-            // final String partialSuffix = REMINDER_MATCHER.group("partialSuffix");
-            // final String charSuffix = REMINDER_MATCHER.group("charSuffix");
+            final String fullSuffix = REMINDER_MATCHER.group("fullSuffix");
+            final String partialSuffix = REMINDER_MATCHER.group("partialSuffix");
+            final String charSuffix = REMINDER_MATCHER.group("charSuffix");
 
-            // final String unit = fullSuffix != null ? fullSuffix :
-            //                     partialSuffix != null ? partialSuffix :
-            //                     charSuffix != null ? charSuffix : "s";
-            final String unit = REMINDER_MATCHER.group(2);
+            final String unit = fullSuffix != null ? fullSuffix :
+                                partialSuffix != null ? partialSuffix :
+                                charSuffix != null ? charSuffix : "s";
+            // final String unit = REMINDER_MATCHER.group(2);
             final String reminderMessage = REMINDER_MATCHER.group("msg");
 
             try {
                 final MessageAuthor author = message.getAuthor();
                 final long userId = author.getId();
 
-                long time = Long.parseLong(REMINDER_MATCHER.group(1));
+                long time = Long.parseLong(REMINDER_MATCHER.group("time"));
 //                LOGGER.info("time={}", time);
                 final ReminderTimeUnit timeUnit = ReminderTimeUnit.getUnit(unit);
     
