@@ -53,7 +53,7 @@ public enum MessageEvent {
 	
 	private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(100);
 	
-	private static final Pattern REMINDER_REGEX = Pattern.compile("!remindme (\\d+) ((second|minute|hour) |(sec|min|hr|day) |([smhd] )) ?(.*)");
+	private static final Pattern REMINDER_REGEX = Pattern.compile("!remindme (\\d+) ((?<fullSuffix>second|minute|hour) |(?<partialSuffix>sec|min|hr|day) |(?<charSuffix>[smhd] )) ?(.*)");
 	private static final Matcher REMINDER_MATCHER = REMINDER_REGEX.matcher("").reset();
 	
 	private static final String SUGGESTION_LINK = "https://forms.gle/Y6pKqMAgYUS6eJJL7";
@@ -286,8 +286,15 @@ public enum MessageEvent {
         // LOGGER.debug("message = {}", text);
         
         if(REMINDER_MATCHER.matches()) {
-            final String unit = REMINDER_MATCHER.group(2);
+            final String fullSuffix = REMINDER_MATCHER.group("fullSuffix");
+            final String partialSuffix = REMINDER_MATCHER.group("partialSuffix");
+            final String charSuffix = REMINDER_MATCHER.group("charSuffix");
+
+            final String unit = fullSuffix != null ? fullSuffix :
+                                partialSuffix != null ? partialSuffix :
+                                charSuffix != null ? charSuffix : "s";
             final String reminderMessage = REMINDER_MATCHER.group(3);
+
             try {
                 final MessageAuthor author = message.getAuthor();
                 final long userId = author.getId();
