@@ -294,6 +294,7 @@ public enum MessageEvent {
                                 partialSuffix != null ? partialSuffix :
                                 charSuffix != null ? charSuffix : "s";
             // final String unit = REMINDER_MATCHER.group(2);
+
             final String reminderMessage = REMINDER_MATCHER.group("msg");
 
             try {
