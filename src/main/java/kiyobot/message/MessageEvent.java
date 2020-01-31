@@ -152,7 +152,7 @@ public enum MessageEvent {
                     default:
                         timeUnit = TimeUnit.MILLISECONDS;
                         break;
-                    }
+                }
 
                 scheduleReminder(() -> {
                     channel.flatMap(Channel::asTextChannel).get().sendMessage(String.format("<@%s> - %s", authorId, reminderMessage));
