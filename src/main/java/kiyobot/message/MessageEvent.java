@@ -322,6 +322,8 @@ public enum MessageEvent {
                     channel.sendMessage(String.format("<@%s> - %s", userId, reminderMessage));
                     collection.deleteOne(doc);
                 }, time, targetUnit);
+    
+                channel.sendMessage("Got it! <:renownthumbsup:673069208250220554>");
             } catch(NumberFormatException nfe) {
                 // LOGGER.error(nfe.getMessage());
             }
