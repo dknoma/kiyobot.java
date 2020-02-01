@@ -1,4 +1,4 @@
-package kiyobot.reminders;
+package kiyobot.util.reminders;
 
 public enum ReminderSuffixType {
     FULL,

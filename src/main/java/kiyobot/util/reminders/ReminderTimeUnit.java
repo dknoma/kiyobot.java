@@ -1,6 +1,5 @@
-package kiyobot.reminders;
+package kiyobot.util.reminders;
 
-import java.sql.Time;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;

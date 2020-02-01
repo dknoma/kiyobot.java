@@ -11,6 +11,7 @@ public enum BasicCommandType {
     GITHUB("!github", "Provides a link to the Github repository for the project."),
     HELP("!help", "List of useful commands."),
     HEWWO("!hewwo", "What's dis?"),
+    NEW_EMOTE("!newemote", "Add a new emote to the server.\nFormat: !newemote <name> <image embed or image url>"),
     PING("!ping", "Pong!"),
     SUGGESTION("!suggestion", "Provides a link to a Google Forms to create suggestions for me!"),
     REMIND_ME("!remindme", "Gives me a message to remind and ping you after a certain amount of time.\n + Format: !remindme <number> <unit> <message>"),
