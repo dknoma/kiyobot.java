@@ -46,6 +46,7 @@ import org.javacord.api.entity.server.Server;
 import org.javacord.api.event.message.MessageCreateEvent;
 
 import java.awt.image.BufferedImage;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -395,17 +396,18 @@ public enum MessageEvent {
                     
                     if(attachments.size() > 0) {
                         MessageAttachment attachment = attachments.get(0);
-                        if(attachment.isImage()) {
+                        if(attachment.isImage() && attachment.getSize() <= 256000) {
                             final Server server = messageEvent.getServer().get();
                             final CustomEmojiBuilder customEmojiBuilder = new CustomEmojiBuilder(server);
                             
                             final String emoteName = matcher.group("name");
-                            
-                            final CompletableFuture<BufferedImage> bufferedImageCompletableFuture = attachment.downloadAsImage();
-                            final BufferedImage bufferedImage = bufferedImageCompletableFuture.get();
+    
+                            final URL imageUrl = attachment.getUrl();
+                            // final CompletableFuture<BufferedImage> bufferedImageCompletableFuture = attachment.downloadAsImage();
+                            // final BufferedImage bufferedImage = bufferedImageCompletableFuture.get();
     
                             final CompletableFuture<KnownCustomEmoji> knownCustomEmojiCompletableFuture =
-                                                                                        customEmojiBuilder.setImage(bufferedImage)
+                                                                                        customEmojiBuilder.setImage(imageUrl)
                                                                                                           .setName(emoteName)
                                                                                                           .create();
     
