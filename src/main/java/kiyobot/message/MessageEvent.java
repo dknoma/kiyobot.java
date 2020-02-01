@@ -403,6 +403,7 @@ public enum MessageEvent {
                             final String emoteName = matcher.group("name");
     
                             final URL imageUrl = attachment.getUrl();
+                            
                             // final CompletableFuture<BufferedImage> bufferedImageCompletableFuture = attachment.downloadAsImage();
                             // final BufferedImage bufferedImage = bufferedImageCompletableFuture.get();
     
