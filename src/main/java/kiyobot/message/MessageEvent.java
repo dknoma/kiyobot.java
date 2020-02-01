@@ -33,6 +33,10 @@ import org.javacord.api.DiscordApi;
 import org.javacord.api.entity.channel.Channel;
 import org.javacord.api.entity.channel.ServerChannel;
 import org.javacord.api.entity.channel.TextChannel;
+import org.javacord.api.entity.emoji.CustomEmoji;
+import org.javacord.api.entity.emoji.CustomEmojiBuilder;
+import org.javacord.api.entity.emoji.Emoji;
+import org.javacord.api.entity.emoji.internal.CustomEmojiBuilderDelegate;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.MessageAuthor;
 import org.javacord.api.entity.server.Server;
@@ -322,8 +326,8 @@ public enum MessageEvent {
                     channel.sendMessage(String.format("<@%s> - %s", userId, reminderMessage));
                     collection.deleteOne(doc);
                 }, time, targetUnit);
-    
-                channel.sendMessage("Got it! <:renownthumbsup:673069208250220554>");
+                
+                channel.sendMessage("Haaaaaai~ :thumbsup:");
             } catch(NumberFormatException nfe) {
                 // LOGGER.error(nfe.getMessage());
             }
