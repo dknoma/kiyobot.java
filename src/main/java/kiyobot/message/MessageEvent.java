@@ -59,7 +59,7 @@ public enum MessageEvent {
 	
 	private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(100);
 
-    private static final Pattern REMINDER_FULL_SUFFIX_REGEX = Pattern.compile("!remindme (?<time>\\d+) (?<suffix>second|minute|hour) +(?<msg>.*)");
+    private static final Pattern REMINDER_FULL_SUFFIX_REGEX = Pattern.compile("!remindme (?<time>\\d+) (?<suffix>seconds|minutes|hours) +(?<msg>.*)");
     private static final Pattern REMINDER_PARTIAL_SUFFIX_REGEX = Pattern.compile("!remindme (?<time>\\d+) (?<suffix>sec|min|hr|day) +(?<msg>.*)");
     private static final Pattern REMINDER_CHAR_SUFFIX_REGEX = Pattern.compile("!remindme (?<time>\\d+) (?<suffix>[smhd]) +(?<msg>.*)");
     private static final Matcher REMINDER_FULL_MATCHER = REMINDER_FULL_SUFFIX_REGEX.matcher("").reset();

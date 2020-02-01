@@ -8,9 +8,9 @@ import java.util.concurrent.TimeUnit;
 
 public enum ReminderTimeUnit {
     SECONDS("s", "sec", "seconds"),
-    MINUTES("m", "min", "minute"),
-    HOURS("h", "hr", "hour"),
-    DAYS("d", "day", "day");
+    MINUTES("m", "min", "minutes"),
+    HOURS("h", "hr", "hours"),
+    DAYS("d", "day", "days");
     
     private static final Map<String, ReminderTimeUnit> UNIT_BY_SINGLE_CHAR_SUFFIX = new HashMap<>();
     private static final Map<String, ReminderTimeUnit> UNIT_BY_PARTIAL_SUFFIX = new HashMap<>();
