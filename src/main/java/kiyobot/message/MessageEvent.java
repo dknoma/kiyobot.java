@@ -421,16 +421,10 @@ public enum MessageEvent {
                                 messageEvent.getChannel().sendMessage(String.format("Enjoy your new emote %s!", customEmoji.getMentionTag()));
                             }
                         }
-    
-                        // final Optional<EmbedImage> imageO = attachment.getImage();
-                        // if(imageO.isPresent()) {
-                        //     EmbedImage image = imageO.get();
-                        // }
                     }
                 }
             }
             case URL: {
-                final List<Embed> embeds = message.getEmbeds();
             }
         }
     }
