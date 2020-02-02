@@ -91,17 +91,13 @@ public enum MessageEvent {
     private static final String CELTX_LINK = "https://www.celtx.com/a/ux/#documents";
     private static final String GITHUB_LINK = "https://github.com/dknoma/Calytrix";
     
-    // private static final String COMMAND_LIST;
     private static final EmbedBuilder COMMANDS_EMBED;
     
     static {
-        // final StringBuilder builder = new StringBuilder();
-        // getBasicCommandList(builder);
-        // COMMAND_LIST = builder.toString();
-        
         COMMANDS_EMBED = new EmbedBuilder()
                                      .setColor(new Color(186, 120, 252))
-                                     .setTitle("Bot commands");
+                                     .setTitle("Bot commands")
+                                     .setDescription("");
     
         Arrays.stream(BasicCommandType.values())
               .filter(type -> type != BasicCommandType.DEFAULT)
@@ -458,23 +454,6 @@ public enum MessageEvent {
     
     private void doEncodeUnknownCommand(MessageCreateEvent messageEvent) {
         messageEvent.getChannel().sendMessage("Unknown command");
-    }
-    
-    private static void getBasicCommandList(StringBuilder builder) {
-        EmbedBuilder embed = new EmbedBuilder()
-                                     .setColor(new Color(186, 120, 252))
-                                     .setTitle("Bot commands");
-        builder.append("**Basic Bot Commands**\n");
-        builder.append("```java\n");
-        Arrays.stream(BasicCommandType.values())
-              .filter(type -> type != BasicCommandType.DEFAULT)
-              .forEach(commandType -> {
-                  builder.append(String.format("----------------\n%s\n----------------\n + %s\n\n",
-                                               commandType.getCommand(),
-                                               commandType.getDescription()));
-                  embed.addField(commandType.getCommand(), commandType.getDescription());
-              });
-        builder.append("```");
     }
     
     private void schedulePingExpiration() {
