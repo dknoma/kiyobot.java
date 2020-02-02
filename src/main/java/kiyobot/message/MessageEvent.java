@@ -96,15 +96,12 @@ public enum MessageEvent {
     static {
         COMMANDS_EMBED = new EmbedBuilder()
                                      .setTitle("Bot commands")
-                                     .setDescription("")
-                                     .setAuthor("");
+                                     .setDescription("List")
+                                     .setColor(new Color(186, 120, 252));
     
         Arrays.stream(BasicCommandType.values())
               .filter(type -> type != BasicCommandType.DEFAULT)
-              .forEach(commandType -> {
-                  COMMANDS_EMBED.addField(commandType.getCommand(), commandType.getDescription());
-              });
-        COMMANDS_EMBED.setColor(new Color(186, 120, 252));
+              .forEach(commandType -> COMMANDS_EMBED.addField(commandType.getCommand(), commandType.getDescription()));
     }
     
     private Matcher matcher;
@@ -115,6 +112,7 @@ public enum MessageEvent {
     private MongoDatabase db;
     
     MessageEvent() {
+        // Utility
     }
     
     /**
