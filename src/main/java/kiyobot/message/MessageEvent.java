@@ -95,9 +95,8 @@ public enum MessageEvent {
     
     static {
         COMMANDS_EMBED = new EmbedBuilder()
-                                     .setColor(new Color(186, 120, 252))
-                                     .setTitle("Bot commands")
-                                     .setDescription("");
+                                     .setAuthor("Bot commands")
+                                     .setColor(new Color(186, 120, 252));
     
         Arrays.stream(BasicCommandType.values())
               .filter(type -> type != BasicCommandType.DEFAULT)
