@@ -440,14 +440,23 @@ public enum MessageEvent {
                             messageEvent.getChannel()
                                         .sendMessage("Server emote limit has been reached. Please remove some emotes and try again.");
                         }
+                    } else {
+                        messageEvent.getChannel()
+                                    .sendMessage("No message attachments present. Please attach an image and try again.");
                     }
+                } else {
+                    messageEvent.getChannel()
+                                .sendMessage("Couldn't retrieve server from message. Please try again.");
                 }
+                break;
             }
-            default:
+            default: {
                 messageEvent.getChannel()
                             .sendMessage(
-                        String.format("Command \"%s\" not recognized. Valid format: !newemote <name> {image attachment (size <= 256kB)}",
-                                      text));
+                                    String.format("Command \"%s\" not recognized. Valid format: !newemote <name> {image attachment (size <= 256kB)}",
+                                                  text));
+                break;
+            }
         }
     }
     
