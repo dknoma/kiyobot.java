@@ -95,14 +95,16 @@ public enum MessageEvent {
     
     static {
         COMMANDS_EMBED = new EmbedBuilder()
-                                     .setAuthor("Bot commands")
-                                     .setColor(new Color(186, 120, 252));
+                                     .setTitle("Bot commands")
+                                     .setDescription("")
+                                     .setAuthor("");
     
         Arrays.stream(BasicCommandType.values())
               .filter(type -> type != BasicCommandType.DEFAULT)
               .forEach(commandType -> {
                   COMMANDS_EMBED.addField(commandType.getCommand(), commandType.getDescription());
               });
+        COMMANDS_EMBED.setColor(new Color(186, 120, 252));
     }
     
     private Matcher matcher;
