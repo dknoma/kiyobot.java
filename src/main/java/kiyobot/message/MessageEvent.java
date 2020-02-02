@@ -41,11 +41,14 @@ import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.message.MessageAttachment;
 import org.javacord.api.entity.message.MessageAuthor;
 import org.javacord.api.entity.message.embed.Embed;
+import org.javacord.api.entity.message.embed.EmbedBuilder;
 import org.javacord.api.entity.message.embed.EmbedImage;
 import org.javacord.api.entity.server.Server;
 import org.javacord.api.event.message.MessageCreateEvent;
 
+import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
@@ -75,26 +78,36 @@ public enum MessageEvent {
     private static final Pattern REMINDER_PARTIAL_SUFFIX_REGEX = Pattern.compile("!remindme (?<time>\\d+) (?<suffix>sec|min|hr|day) +(?<msg>.*)");
     private static final Pattern REMINDER_CHAR_SUFFIX_REGEX = Pattern.compile("!remindme (?<time>\\d+) (?<suffix>[smhd]) +(?<msg>.*)");
     private static final Pattern NEW_EMOTE_EMBED_REGEX = Pattern.compile("!newemote (?<name>[a-zA-Z0-9_]{2,})");
-    private static final Pattern NEW_EMOTE_IMAGE_URL_REGEX = Pattern.compile("!newemote (?<name>[a-zA-Z0-9_]{2,}) (?<url>.*)");
+    // private static final Pattern NEW_EMOTE_IMAGE_URL_REGEX = Pattern.compile("!newemote (?<name>[a-zA-Z0-9_]{2,}) (?<url>.*)");
     
     private static final Matcher REMINDER_FULL_MATCHER = REMINDER_FULL_SUFFIX_REGEX.matcher("").reset();
     private static final Matcher REMINDER_PARTIAL_MATCHER = REMINDER_PARTIAL_SUFFIX_REGEX.matcher("").reset();
     private static final Matcher REMINDER_CHAR_MATCHER = REMINDER_CHAR_SUFFIX_REGEX.matcher("").reset();
     private static final Matcher NEW_EMOTE_EMBED_MATCHER = NEW_EMOTE_EMBED_REGEX.matcher("").reset();
-    private static final Matcher NEW_EMOTE_IMAGE_URL_MATCHER = NEW_EMOTE_IMAGE_URL_REGEX.matcher("").reset();
+    // private static final Matcher NEW_EMOTE_IMAGE_URL_MATCHER = NEW_EMOTE_IMAGE_URL_REGEX.matcher("").reset();
     
     private static final String SUGGESTION_LINK = "https://forms.gle/Y6pKqMAgYUS6eJJL7";
     private static final String DOC_LINK_VIEW_ONLY = "https://docs.google.com/document/d/1gmVzkkEiOadXF6ThIalBqzCuuyrGVs2ZGUzqcGeQZyE/edit?usp=sharing";
     private static final String CELTX_LINK = "https://www.celtx.com/a/ux/#documents";
     private static final String GITHUB_LINK = "https://github.com/dknoma/Calytrix";
     
-    private static final String COMMAND_LIST;
+    // private static final String COMMAND_LIST;
+    private static final EmbedBuilder COMMANDS_EMBED;
     
     static {
-        final StringBuilder builder = new StringBuilder();
-        getBasicCommandList(builder);
+        // final StringBuilder builder = new StringBuilder();
+        // getBasicCommandList(builder);
+        // COMMAND_LIST = builder.toString();
         
-        COMMAND_LIST = builder.toString();
+        COMMANDS_EMBED = new EmbedBuilder()
+                                     .setColor(new Color(186, 120, 252))
+                                     .setTitle("Bot commands");
+    
+        Arrays.stream(BasicCommandType.values())
+              .filter(type -> type != BasicCommandType.DEFAULT)
+              .forEach(commandType -> {
+                  COMMANDS_EMBED.addField(commandType.getCommand(), commandType.getDescription());
+              });
     }
     
     private Matcher matcher;
@@ -254,7 +267,7 @@ public enum MessageEvent {
      * @param messageEvent;
      */
     private void doEncodeCommandsList(MessageCreateEvent messageEvent) {
-        messageEvent.getChannel().sendMessage(COMMAND_LIST);
+        messageEvent.getChannel().sendMessage(COMMANDS_EMBED);
     }
     
     private void doEncodeDocLink(MessageCreateEvent messageEvent) {
@@ -376,15 +389,15 @@ public enum MessageEvent {
         final Message message = messageEvent.getMessage();
         final String text = message.getContent();
         NEW_EMOTE_EMBED_MATCHER.reset(text);
-        NEW_EMOTE_IMAGE_URL_MATCHER.reset(text);
+        // NEW_EMOTE_IMAGE_URL_MATCHER.reset(text);
         
         final NewEmoteMessageType type;
         if (NEW_EMOTE_EMBED_MATCHER.matches()) {
             this.matcher = NEW_EMOTE_EMBED_MATCHER;
             type = NewEmoteMessageType.EMBED;
-        } else if (NEW_EMOTE_IMAGE_URL_MATCHER.matches()) {
-            this.matcher = NEW_EMOTE_IMAGE_URL_MATCHER;
-            type = NewEmoteMessageType.URL;
+        // } else if (NEW_EMOTE_IMAGE_URL_MATCHER.matches()) {
+        //     this.matcher = NEW_EMOTE_IMAGE_URL_MATCHER;
+        //     type = NewEmoteMessageType.URL;
         } else {
             type = NewEmoteMessageType.NULL;
         }
@@ -395,37 +408,51 @@ public enum MessageEvent {
                     final List<MessageAttachment> attachments = message.getAttachments();
                     
                     if(attachments.size() > 0) {
-                        MessageAttachment attachment = attachments.get(0);
-                        if(attachment.isImage() && attachment.getSize() <= 256000) {
-                            final Server server = messageEvent.getServer().get();
+                        final Server server = messageEvent.getServer().get();
+                        final MessageAttachment attachment = attachments.get(0);
+                        
+                        final boolean isImage = attachment.isImage();
+                        final int attachmentSize = attachment.getSize();
+                        final int serverEmoteCount = server.getCustomEmojis().size();
+                        
+                        if(serverEmoteCount < 100 && isImage && attachmentSize <= 256000) {
                             final CustomEmojiBuilder customEmojiBuilder = new CustomEmojiBuilder(server);
-                            
                             final String emoteName = matcher.group("name");
-    
                             final URL imageUrl = attachment.getUrl();
-                            
-                            // final CompletableFuture<BufferedImage> bufferedImageCompletableFuture = attachment.downloadAsImage();
-                            // final BufferedImage bufferedImage = bufferedImageCompletableFuture.get();
     
                             final CompletableFuture<KnownCustomEmoji> knownCustomEmojiCompletableFuture =
-                                                                                        customEmojiBuilder.setImage(imageUrl)
-                                                                                                          .setName(emoteName)
-                                                                                                          .create();
+                                    customEmojiBuilder.setImage(imageUrl)
+                                                      .setName(emoteName)
+                                                      .create();
     
                             final KnownCustomEmoji knownCustomEmoji = knownCustomEmojiCompletableFuture.get();
                             final Optional<CustomEmoji> customEmojiO = knownCustomEmoji.asCustomEmoji();
-                            
-                            if(customEmojiO.isPresent()) {
+    
+                            if (customEmojiO.isPresent()) {
                                 final CustomEmoji customEmoji = customEmojiO.get();
-                                
-                                messageEvent.getChannel().sendMessage(String.format("Enjoy your new emote %s!", customEmoji.getMentionTag()));
+        
+                                messageEvent.getChannel().sendMessage(String.format("Enjoy your new emote %s!",
+                                                                                    customEmoji.getMentionTag()));
                             }
+                        } else if(!isImage) {
+                            messageEvent.getChannel()
+                                        .sendMessage("Message attachment is not an image. Please try again.");
+                        } else if(attachmentSize > 256000) {
+                            messageEvent.getChannel()
+                                        .sendMessage(String.format("Attachment size %d > 256kB. Please try a smaller image.",
+                                                                   attachmentSize));
+                        } else {
+                            messageEvent.getChannel()
+                                        .sendMessage("Server emote limit has been reached. Please remove some emotes and try again.");
                         }
                     }
                 }
             }
-            case URL: {
-            }
+            default:
+                messageEvent.getChannel()
+                            .sendMessage(
+                        String.format("Command \"%s\" not recognized. Valid format: !newemote <name> {image attachment (size <= 256kB)}",
+                                      text));
         }
     }
     
@@ -434,6 +461,9 @@ public enum MessageEvent {
     }
     
     private static void getBasicCommandList(StringBuilder builder) {
+        EmbedBuilder embed = new EmbedBuilder()
+                                     .setColor(new Color(186, 120, 252))
+                                     .setTitle("Bot commands");
         builder.append("**Basic Bot Commands**\n");
         builder.append("```java\n");
         Arrays.stream(BasicCommandType.values())
@@ -442,6 +472,7 @@ public enum MessageEvent {
                   builder.append(String.format("----------------\n%s\n----------------\n + %s\n\n",
                                                commandType.getCommand(),
                                                commandType.getDescription()));
+                  embed.addField(commandType.getCommand(), commandType.getDescription());
               });
         builder.append("```");
     }
